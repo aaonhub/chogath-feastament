@@ -131,8 +131,13 @@ function AutoTextarea({ value, onChange, placeholder, minRows = 3 }: {
 function RuneSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const selected = value.replace(/\(based on preference\)/gi, "").split("/").map((r) => r.trim()).filter(Boolean);
   function toggle(runeId: string) {
-    const newSel = selected.includes(runeId) ? selected.filter((r) => r !== runeId) : [...selected, runeId];
-    onChange(newSel.length > 1 ? `${newSel.join("/")} (based on preference)` : newSel.join("/"));
+    let newSel: string[];
+    if (selected.includes(runeId)) {
+      newSel = selected.filter((r) => r !== runeId);
+    } else {
+      newSel = [...selected, runeId];
+    }
+    onChange(newSel.length > 1 ? `${newSel.join("/")} (based on preference)` : newSel.join(""));
   }
   return (
     <div className="flex flex-wrap gap-1.5">
