@@ -172,7 +172,7 @@ function AbilityOrderEditor({ value, onChange }: { value: string; onChange: (v: 
   );
 }
 
-function ChampionSearch({ value, onChange }: { value: string; onChange: (name: string, key: string) => void }) {
+function ChampionSearch({ value, onChange, exclude }: { value: string; onChange: (name: string, key: string) => void; exclude?: string[] }) {
   const [query, setQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const [liveChamps, setLiveChamps] = useState<string[]>(ALL_CHAMPIONS);
@@ -186,9 +186,11 @@ function ChampionSearch({ value, onChange }: { value: string; onChange: (name: s
       })
       .catch(() => {});
   }, []);
+  const excludeSet = new Set(exclude?.map((e) => e.toLowerCase()) || []);
+  const available = liveChamps.filter((c) => !excludeSet.has(c.toLowerCase()));
   const filtered = query
-    ? liveChamps.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 12)
-    : liveChamps.slice(0, 12);
+    ? available.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 12)
+    : available.slice(0, 12);
   return (
     <div className="relative">
       <input type="text" value={query}
@@ -286,26 +288,35 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 
 // ── Edit Modal ──
 
-function EditModal({ matchup, onSave, onClose, isNew }: {
-  matchup: Matchup; onSave: (m: Matchup) => void; onClose: () => void; isNew?: boolean;
+function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
+  matchup: Matchup; onSave: (m: Matchup) => void; onClose: () => void; isNew?: boolean; excludeChampions?: string[];
 }) {
   const [m, setM] = useState<Matchup>({ ...matchup });
+  const [modalDirty, setModalDirty] = useState(false);
 
   function update<K extends keyof Matchup>(key: K, value: Matchup[K]) {
     setM((prev) => ({ ...prev, [key]: value }));
+    setModalDirty(true);
+  }
+
+  function tryClose() {
+    if (modalDirty) {
+      if (!confirm("You have unsaved changes. Discard them?")) return;
+    }
+    onClose();
   }
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") tryClose(); }
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
-  }, [onClose]);
+  }, [onClose, modalDirty]);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-8"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="relative w-full max-w-4xl rounded-2xl border border-card-border bg-card shadow-2xl my-8">
+      onClick={(e) => { if (e.target === e.currentTarget) tryClose(); }}>
+      <div className="relative w-full max-w-6xl rounded-2xl border border-card-border bg-card shadow-2xl my-8">
         {/* Header */}
         <div className="flex items-center gap-4 border-b border-card-border px-6 py-4">
           <ChampImg champKey={m.championKey} size={48} />
@@ -313,81 +324,76 @@ function EditModal({ matchup, onSave, onClose, isNew }: {
           <button onClick={() => { onSave(m); }} className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white transition hover:bg-accent-glow">
             {isNew ? "Add" : "Done"}
           </button>
-          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 transition hover:bg-card-border hover:text-foreground">
+          <button onClick={tryClose} className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 transition hover:bg-card-border hover:text-foreground">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="px-6 py-5 space-y-5 max-h-[75vh] overflow-y-auto">
-          {/* Champion */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col lg:flex-row max-h-[80vh] overflow-y-auto">
+          {/* Left: Champion + Advice */}
+          <div className="flex-1 px-6 py-5 space-y-4">
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Champion</label>
-              <ChampionSearch value={m.champion} onChange={(name, key) => setM((prev) => ({ ...prev, champion: name, championKey: key }))} />
+              <ChampionSearch value={m.champion} onChange={(name, key) => { setM((prev) => ({ ...prev, champion: name, championKey: key })); setModalDirty(true); }} exclude={excludeChampions} />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">DDragon Key</label>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Matchup Advice</label>
+              <AutoTextarea value={m.advice} onChange={(v) => update("advice", v)} placeholder="Detailed matchup advice..." minRows={8} />
+            </div>
+          </div>
+
+          {/* Right: AP and Tank side by side */}
+          <div className="flex w-full flex-col gap-3 p-5 lg:w-[520px] lg:shrink-0">
+            {/* AP */}
+            <div className="rounded-xl border border-[#7b2ff2]/30 bg-[#7b2ff2]/5 p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <input type="text" value={m.championKey} onChange={(e) => update("championKey", e.target.value)} placeholder="Auto-filled"
-                  className="flex-1 rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none" />
-                <ChampImg champKey={m.championKey} size={36} />
+                <Image src="/images/mage-icon.webp" alt="AP" width={20} height={20} className="h-5 w-5" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-accent-glow">AP</h4>
+                <div className="flex-1" />
+                <select value={m.difficultyAP} onChange={(e) => update("difficultyAP", e.target.value as Difficulty)}
+                  className={`rounded px-2 py-1 text-xs font-bold text-white ${DIFF_COLORS[m.difficultyAP]} border-0 mr-2`}>
+                  {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Rune</label>
+                <RuneSelector value={m.runeAP} onChange={(v) => update("runeAP", v)} />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Skill Order</label>
+                <AbilityOrderEditor value={m.abilityOrderAP} onChange={(v) => update("abilityOrderAP", v)} />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Items</label>
+                <ItemsField value={m.itemsAP} onChange={(v) => update("itemsAP", v)} />
               </div>
             </div>
-          </div>
 
-          {/* Advice */}
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Matchup Advice</label>
-            <AutoTextarea value={m.advice} onChange={(v) => update("advice", v)} placeholder="Detailed matchup advice..." minRows={4} />
-          </div>
-
-          {/* AP */}
-          <div className="rounded-xl border border-[#7b2ff2]/30 bg-[#7b2ff2]/5 p-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <Image src="/images/mage-icon.webp" alt="AP" width={20} height={20} className="h-5 w-5" />
-              <h4 className="text-sm font-bold uppercase tracking-wider text-accent-glow">AP Cho&apos;Gath</h4>
-              <select value={m.difficultyAP} onChange={(e) => update("difficultyAP", e.target.value as Difficulty)}
-                className={`ml-auto rounded px-2 py-1 text-xs font-bold text-white ${DIFF_COLORS[m.difficultyAP]} border-0`}>
-                {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Keystone Rune</label>
-              <RuneSelector value={m.runeAP} onChange={(v) => update("runeAP", v)} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Skill Order</label>
-              <AbilityOrderEditor value={m.abilityOrderAP} onChange={(v) => update("abilityOrderAP", v)} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Items</label>
-              <ItemsField value={m.itemsAP} onChange={(v) => update("itemsAP", v)} />
-            </div>
-          </div>
-
-          {/* Tank */}
-          <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <Image src="/images/tank-icon.png" alt="Tank" width={20} height={20} className="h-5 w-5" />
-              <h4 className="text-sm font-bold uppercase tracking-wider text-blue-400">Tank Cho&apos;Gath</h4>
-              <select value={m.difficultyTank} onChange={(e) => update("difficultyTank", e.target.value as Difficulty)}
-                className={`ml-auto rounded px-2 py-1 text-xs font-bold text-white ${DIFF_COLORS[m.difficultyTank]} border-0`}>
-                {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Keystone Rune</label>
-              <RuneSelector value={m.runeTank} onChange={(v) => update("runeTank", v)} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Skill Order</label>
-              <AbilityOrderEditor value={m.abilityOrderTank} onChange={(v) => update("abilityOrderTank", v)} />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Items</label>
-              <ItemsField value={m.itemsTank} onChange={(v) => update("itemsTank", v)} />
+            {/* Tank */}
+            <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Image src="/images/tank-icon.png" alt="Tank" width={20} height={20} className="h-5 w-5" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-blue-400">Tank</h4>
+                <div className="flex-1" />
+                <select value={m.difficultyTank} onChange={(e) => update("difficultyTank", e.target.value as Difficulty)}
+                  className={`rounded px-2 py-1 text-xs font-bold text-white ${DIFF_COLORS[m.difficultyTank]} border-0 mr-2`}>
+                  {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Rune</label>
+                <RuneSelector value={m.runeTank} onChange={(v) => update("runeTank", v)} />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Skill Order</label>
+                <AbilityOrderEditor value={m.abilityOrderTank} onChange={(v) => update("abilityOrderTank", v)} />
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Items</label>
+                <ItemsField value={m.itemsTank} onChange={(v) => update("itemsTank", v)} />
+              </div>
             </div>
           </div>
         </div>
@@ -531,6 +537,7 @@ export default function AdminPage() {
         <EditModal
           matchup={emptyMatchup()}
           isNew
+          excludeChampions={data ? data[activeTab].map((m) => m.champion) : []}
           onSave={(newM) => {
             if (!data) return;
             setData({ ...data, [activeTab]: [...data[activeTab], newM] }); setDirty(true); setAdding(false);
