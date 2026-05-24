@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 
 type Difficulty = "Easy" | "Medium" | "Hard" | "Super Hard";
 
@@ -24,7 +25,6 @@ interface MatchupData {
 }
 
 const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard", "Super Hard"];
-
 const DIFF_COLORS: Record<Difficulty, string> = {
   Easy: "bg-easy",
   Medium: "bg-medium",
@@ -32,20 +32,258 @@ const DIFF_COLORS: Record<Difficulty, string> = {
   "Super Hard": "bg-super-hard",
 };
 
+const DDRAGON = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/champion";
+const DDRAGON_SPELL = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/spell";
+
+const RUNES = [
+  { id: "Comet", label: "Comet", img: "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Sorcery/ArcaneComet/ArcaneComet.png" },
+  { id: "HoB", label: "HoB", img: "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Domination/HailOfBlades/HailOfBlades.png" },
+  { id: "Grasp", label: "Grasp", img: "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Resolve/GraspOfTheUndying/GraspOfTheUndying.png" },
+  { id: "Electrocute", label: "Electro", img: "https://ddragon.leagueoflegends.com/cdn/img/perk-images/Styles/Domination/Electrocute/Electrocute.png" },
+];
+
+const CHO_SPELLS = [
+  { key: "Q", name: "Rupture", img: `${DDRAGON_SPELL}/Rupture.png` },
+  { key: "W", name: "Feral Scream", img: `${DDRAGON_SPELL}/FeralScream.png` },
+  { key: "E", name: "Vorpal Spikes", img: `${DDRAGON_SPELL}/VorpalSpikes.png` },
+  { key: "R", name: "Feast", img: `${DDRAGON_SPELL}/Feast.png` },
+];
+
+const COMMON_ORDERS = [
+  "Q - W - R - E",
+  "Q - W - E - R",
+  "E - W - R - Q",
+  "E - W - Q - R",
+  "W - Q - R - E",
+  "3 Points Q - Max W - Finish Q - R - E",
+  "2 Points Q - 2 Points E-  Max W - Finish Q - R - E",
+  "W - Q - R - E",
+];
+
+const ITEM_NAMES = [
+  "Zhonya's Hourglass", "Force of Nature", "Blade of the Ruined King", "Boots of Swiftness",
+  "Mercury's Treads", "Plated Steelcaps", "Warmog's Armor", "Heartsteel", "Banshee's Veil",
+  "Luden's Companion", "Rod of Ages", "Kaenic Rookern", "Dead Man's Plate", "Frozen Heart",
+  "Bramble Vest", "Sunfire Aegis", "Randuin's Omen", "Eclipse", "Fimbulwinter",
+  "Shurelya's Battlesong", "Rylai's Crystal Scepter", "Warden's Mail", "Negatron Cloak",
+  "Horizon Focus", "Dark Seal", "Lost Chapter", "Oblivion Orb", "Liandry's Torment",
+  "Riftmaker", "Jak'Sho", "Cosmic Drive", "Wit's End", "Abyssal Mask", "Cull",
+  "Malignance", "Moonstone Renewer", "Trinity Force", "Nashor's Tooth", "Hollow Radiance",
+  "Unending Despair", "Ionian Boots", "Chain Vest", "Rocketbelt",
+];
+
+const CHAMPION_KEYS: Record<string, string> = {
+  "Aurelion Sol": "AurelionSol", "Dr. Mundo": "DrMundo", "Twisted Fate": "TwistedFate",
+  "LeBlanc": "Leblanc", "Vel'Koz": "Velkoz", "K'Sante": "KSante",
+  "Tahm Kench": "TahmKench", "Wukong": "MonkeyKing",
+};
+
+function champKey(name: string): string {
+  return CHAMPION_KEYS[name] || name.replace(/[' ]/g, "");
+}
+
 function emptyMatchup(): Matchup {
   return {
-    champion: "",
-    championKey: "",
-    advice: "",
-    runeAP: "",
-    runeTank: "",
-    itemsAP: "",
-    itemsTank: "",
-    difficultyAP: "Medium",
-    difficultyTank: "Medium",
-    abilityOrderAP: "Q - W - R - E",
-    abilityOrderTank: "Q - W - R - E",
+    champion: "", championKey: "", advice: "",
+    runeAP: "", runeTank: "", itemsAP: "", itemsTank: "",
+    difficultyAP: "Medium", difficultyTank: "Medium",
+    abilityOrderAP: "Q - W - R - E", abilityOrderTank: "Q - W - R - E",
   };
+}
+
+// --- Components ---
+
+function AutoTextarea({ value, onChange, placeholder, minRows = 3 }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; minRows?: number;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = Math.max(ref.current.scrollHeight, minRows * 24) + "px";
+    }
+  }, [value, minRows]);
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full resize-none rounded-lg border border-card-border bg-background px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
+      style={{ overflow: "hidden" }}
+    />
+  );
+}
+
+function RuneSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const selected = value
+    .replace(/\(based on preference\)/gi, "")
+    .split("/")
+    .map((r) => r.trim())
+    .filter(Boolean);
+
+  function toggle(runeId: string) {
+    const newSel = selected.includes(runeId)
+      ? selected.filter((r) => r !== runeId)
+      : [...selected, runeId];
+    const formatted = newSel.length > 1
+      ? `${newSel.join("/")} (based on preference)`
+      : newSel.join("/");
+    onChange(formatted);
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {RUNES.map((r) => {
+        const active = selected.includes(r.id);
+        return (
+          <button
+            key={r.id}
+            type="button"
+            onClick={() => toggle(r.id)}
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${
+              active
+                ? "border-accent bg-accent/20 text-accent-glow"
+                : "border-card-border bg-background text-foreground/40 hover:text-foreground/70"
+            }`}
+          >
+            <Image src={r.img} alt={r.label} width={20} height={20} className="h-5 w-5 rounded" />
+            {r.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function AbilityOrderEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const isPreset = COMMON_ORDERS.includes(value);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1">
+        {COMMON_ORDERS.map((order) => (
+          <button
+            key={order}
+            type="button"
+            onClick={() => onChange(order)}
+            className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition ${
+              value === order
+                ? "border-accent bg-accent/20 text-accent-glow"
+                : "border-card-border bg-background text-foreground/40 hover:text-foreground/70"
+            }`}
+          >
+            {order.match(/[QWER]/g)?.map((letter, i) => {
+              const spell = CHO_SPELLS.find((s) => s.key === letter);
+              return spell ? (
+                <Image key={i} src={spell.img} alt={letter} width={16} height={16} className="h-4 w-4 rounded" />
+              ) : null;
+            })}
+            <span className="ml-0.5">{order.length > 15 ? order.slice(0, 12) + "…" : order}</span>
+          </button>
+        ))}
+      </div>
+      {!isPreset && (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Custom order..."
+          className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
+        />
+      )}
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded border border-card-border/50 bg-transparent px-2 py-1 text-xs text-foreground/50 focus:border-accent focus:outline-none"
+        placeholder="Or type custom..."
+      />
+    </div>
+  );
+}
+
+function ItemsField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = Math.max(ref.current.scrollHeight, 72) + "px";
+    }
+  }, [value]);
+
+  const filtered = query.length > 0
+    ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    : [];
+
+  function insertItem(itemName: string) {
+    const separator = value.trim() ? ", " : "";
+    onChange(value + separator + itemName);
+    setQuery("");
+    setShowSuggestions(false);
+    ref.current?.focus();
+  }
+
+  return (
+    <div className="relative">
+      <textarea
+        ref={ref}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Item recommendations..."
+        className="w-full resize-none rounded-lg border border-card-border bg-background px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
+        style={{ overflow: "hidden", minHeight: "72px" }}
+      />
+      <div className="mt-1 relative">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+          placeholder="Search items to add..."
+          className="w-full rounded-lg border border-dashed border-card-border bg-transparent px-3 py-1.5 text-xs text-foreground/60 placeholder:text-foreground/30 focus:border-accent focus:outline-none"
+        />
+        {showSuggestions && filtered.length > 0 && (
+          <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-card-border bg-card py-1 shadow-xl">
+            {filtered.map((name) => (
+              <button
+                key={name}
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => insertItem(name)}
+                className="w-full px-3 py-1.5 text-left text-sm text-foreground/70 transition hover:bg-accent/20 hover:text-foreground"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ChampImg({ champKey: ck, size = 32 }: { champKey: string; size?: number }) {
+  const [err, setErr] = useState(false);
+  if (!ck || err) {
+    return <div className="shrink-0 rounded bg-card-border" style={{ width: size, height: size }} />;
+  }
+  return (
+    <Image
+      src={`${DDRAGON}/${ck}.png`}
+      alt=""
+      width={size}
+      height={size}
+      className="shrink-0 rounded border border-card-border"
+      style={{ width: size, height: size }}
+      onError={() => setErr(true)}
+    />
+  );
 }
 
 // --- Login Form ---
@@ -58,39 +296,26 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
       });
-
-      if (res.ok) {
-        onLogin();
-      } else {
+      if (res.ok) { onLogin(); }
+      else {
         const data = await res.json();
         setError(data.error || "Invalid password");
       }
-    } catch {
-      setError("Network error");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error"); }
+    finally { setLoading(false); }
   }
 
   return (
     <div className="mx-auto max-w-md px-4 py-24">
-      <h1 className="mb-6 text-center text-3xl font-bold text-accent-glow">
-        Admin Login
-      </h1>
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-xl border border-card-border bg-card p-6"
-      >
-        <label className="mb-2 block text-sm font-medium text-foreground/70">
-          Password
-        </label>
+      <h1 className="mb-6 text-center text-3xl font-bold text-accent-glow">Admin Login</h1>
+      <form onSubmit={handleSubmit} className="rounded-xl border border-card-border bg-card p-6">
+        <label className="mb-2 block text-sm font-medium text-foreground/70">Password</label>
         <input
           type="password"
           value={password}
@@ -99,9 +324,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
           placeholder="Enter admin password"
           autoFocus
         />
-        {error && (
-          <p className="mb-4 text-sm font-medium text-hard">{error}</p>
-        )}
+        {error && <p className="mb-4 text-sm font-medium text-hard">{error}</p>}
         <button
           type="submit"
           disabled={loading || !password}
@@ -115,11 +338,7 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 }
 
 // --- Matchup Editor Row ---
-function MatchupRow({
-  matchup,
-  onChange,
-  onDelete,
-}: {
+function MatchupRow({ matchup, onChange, onDelete }: {
   matchup: Matchup;
   onChange: (updated: Matchup) => void;
   onDelete: () => void;
@@ -127,222 +346,184 @@ function MatchupRow({
   const [expanded, setExpanded] = useState(false);
 
   function update<K extends keyof Matchup>(key: K, value: Matchup[K]) {
-    onChange({ ...matchup, [key]: value });
+    const updated = { ...matchup, [key]: value };
+    if (key === "champion") {
+      updated.championKey = champKey(value as string);
+    }
+    onChange(updated);
   }
 
   return (
     <div className="rounded-xl border border-card-border bg-card">
-      {/* Header row - always visible */}
       <div
         className="flex cursor-pointer items-center gap-3 px-4 py-3 transition hover:bg-card-border/30"
         onClick={() => setExpanded(!expanded)}
       >
         <svg
           className={`h-4 w-4 shrink-0 text-foreground/40 transition-transform ${expanded ? "rotate-90" : ""}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 5l7 7-7 7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
         </svg>
 
-        <span className="min-w-[140px] text-sm font-bold">
+        <ChampImg champKey={matchup.championKey} size={28} />
+
+        <span className="min-w-[120px] text-sm font-bold">
           {matchup.champion || "(unnamed)"}
         </span>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <span className="text-xs text-foreground/40">AP:</span>
-          <span
-            className={`rounded px-1.5 py-0.5 text-xs font-bold text-white ${DIFF_COLORS[matchup.difficultyAP]}`}
-          >
+          <span className={`rounded px-1.5 py-0.5 text-xs font-bold text-white ${DIFF_COLORS[matchup.difficultyAP]}`}>
             {matchup.difficultyAP}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <span className="text-xs text-foreground/40">Tank:</span>
-          <span
-            className={`rounded px-1.5 py-0.5 text-xs font-bold text-white ${DIFF_COLORS[matchup.difficultyTank]}`}
-          >
+          <span className={`rounded px-1.5 py-0.5 text-xs font-bold text-white ${DIFF_COLORS[matchup.difficultyTank]}`}>
             {matchup.difficultyTank}
           </span>
         </div>
 
-        <div className="ml-auto">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (
-                confirm(`Delete ${matchup.champion || "this matchup"}?`)
-              ) {
-                onDelete();
-              }
-            }}
-            className="rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20"
-          >
-            Delete
-          </button>
-        </div>
+        <span className="ml-auto text-xs text-foreground/30 truncate max-w-[200px]">
+          {matchup.runeAP} / {matchup.runeTank}
+        </span>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (confirm(`Delete ${matchup.champion || "this matchup"}?`)) onDelete();
+          }}
+          className="shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20"
+        >
+          Delete
+        </button>
       </div>
 
-      {/* Expanded editor */}
       {expanded && (
-        <div className="border-t border-card-border px-4 py-4">
+        <div className="border-t border-card-border px-5 py-5 space-y-5">
           {/* Champion info */}
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field
-              label="Champion Name"
-              value={matchup.champion}
-              onChange={(v) => update("champion", v)}
-              placeholder="e.g. Ahri"
-            />
-            <Field
-              label="Champion Key (DDragon)"
-              value={matchup.championKey}
-              onChange={(v) => update("championKey", v)}
-              placeholder="e.g. Ahri, AurelionSol"
-            />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Champion Name
+              </label>
+              <input
+                type="text"
+                value={matchup.champion}
+                onChange={(e) => update("champion", e.target.value)}
+                placeholder="e.g. Ahri"
+                className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Champion Key (DDragon)
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={matchup.championKey}
+                  onChange={(e) => update("championKey", e.target.value)}
+                  placeholder="e.g. AurelionSol"
+                  className="flex-1 rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none"
+                />
+                <ChampImg champKey={matchup.championKey} size={36} />
+              </div>
+            </div>
+            <div className="flex items-end">
+              <p className="text-xs text-foreground/30">
+                Key auto-fills from name. Override for special cases (AurelionSol, DrMundo, etc.)
+              </p>
+            </div>
           </div>
 
           {/* Advice */}
-          <div className="mb-4">
+          <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
-              Advice
+              Matchup Advice
             </label>
-            <textarea
+            <AutoTextarea
               value={matchup.advice}
-              onChange={(e) => update("advice", e.target.value)}
-              rows={4}
-              className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
-              placeholder="Matchup advice..."
+              onChange={(v) => update("advice", v)}
+              placeholder="Detailed matchup advice..."
+              minRows={4}
             />
           </div>
 
-          {/* AP section */}
-          <h4 className="mb-2 text-sm font-bold text-accent-glow">
-            AP Cho&apos;Gath
-          </h4>
-          <div className="mb-4 grid grid-cols-1 gap-3 rounded-lg border border-card-border/50 bg-background/50 p-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Field
-              label="Rune (AP)"
-              value={matchup.runeAP}
-              onChange={(v) => update("runeAP", v)}
-              placeholder="e.g. Comet"
-            />
-            <SelectField
-              label="Difficulty (AP)"
-              value={matchup.difficultyAP}
-              options={DIFFICULTIES}
-              onChange={(v) => update("difficultyAP", v as Difficulty)}
-            />
-            <Field
-              label="Ability Order (AP)"
-              value={matchup.abilityOrderAP}
-              onChange={(v) => update("abilityOrderAP", v)}
-              placeholder="Q - W - R - E"
-            />
-            <Field
-              label="Items (AP)"
-              value={matchup.itemsAP}
-              onChange={(v) => update("itemsAP", v)}
-              placeholder="Item recommendations..."
-            />
+          {/* AP Section */}
+          <div className="rounded-xl border border-[#7b2ff2]/30 bg-[#7b2ff2]/5 p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-[#7b2ff2]" />
+              <h4 className="text-sm font-bold uppercase tracking-wider text-accent-glow">AP Cho&apos;Gath</h4>
+              <select
+                value={matchup.difficultyAP}
+                onChange={(e) => update("difficultyAP", e.target.value as Difficulty)}
+                className={`ml-auto rounded px-2 py-1 text-xs font-bold text-white ${DIFF_COLORS[matchup.difficultyAP]} border-0`}
+              >
+                {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Keystone Rune
+              </label>
+              <RuneSelector value={matchup.runeAP} onChange={(v) => update("runeAP", v)} />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Skill Order
+              </label>
+              <AbilityOrderEditor value={matchup.abilityOrderAP} onChange={(v) => update("abilityOrderAP", v)} />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Items
+              </label>
+              <ItemsField value={matchup.itemsAP} onChange={(v) => update("itemsAP", v)} />
+            </div>
           </div>
 
-          {/* Tank section */}
-          <h4 className="mb-2 text-sm font-bold text-blue-400">
-            Tank Cho&apos;Gath
-          </h4>
-          <div className="grid grid-cols-1 gap-3 rounded-lg border border-card-border/50 bg-background/50 p-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Field
-              label="Rune (Tank)"
-              value={matchup.runeTank}
-              onChange={(v) => update("runeTank", v)}
-              placeholder="e.g. Grasp"
-            />
-            <SelectField
-              label="Difficulty (Tank)"
-              value={matchup.difficultyTank}
-              options={DIFFICULTIES}
-              onChange={(v) => update("difficultyTank", v as Difficulty)}
-            />
-            <Field
-              label="Ability Order (Tank)"
-              value={matchup.abilityOrderTank}
-              onChange={(v) => update("abilityOrderTank", v)}
-              placeholder="E - W - R - Q"
-            />
-            <Field
-              label="Items (Tank)"
-              value={matchup.itemsTank}
-              onChange={(v) => update("itemsTank", v)}
-              placeholder="Item recommendations..."
-            />
+          {/* Tank Section */}
+          <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-full bg-blue-500" />
+              <h4 className="text-sm font-bold uppercase tracking-wider text-blue-400">Tank Cho&apos;Gath</h4>
+              <select
+                value={matchup.difficultyTank}
+                onChange={(e) => update("difficultyTank", e.target.value as Difficulty)}
+                className={`ml-auto rounded px-2 py-1 text-xs font-bold text-white ${DIFF_COLORS[matchup.difficultyTank]} border-0`}
+              >
+                {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Keystone Rune
+              </label>
+              <RuneSelector value={matchup.runeTank} onChange={(v) => update("runeTank", v)} />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Skill Order
+              </label>
+              <AbilityOrderEditor value={matchup.abilityOrderTank} onChange={(v) => update("abilityOrderTank", v)} />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
+                Items
+              </label>
+              <ItemsField value={matchup.itemsTank} onChange={(v) => update("itemsTank", v)} />
+            </div>
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
-        {label}
-      </label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
-      />
-    </div>
-  );
-}
-
-function SelectField({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
-      >
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
     </div>
   );
 }
@@ -360,17 +541,12 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"mid" | "top">("mid");
   const [search, setSearch] = useState("");
 
-  // Load data
   const loadData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const res = await fetch("/api/matchups");
-      if (res.status === 401) {
-        setAuthed(false);
-        setLoading(false);
-        return;
-      }
+      if (res.status === 401) { setAuthed(false); setLoading(false); return; }
       if (!res.ok) {
         const errData = await res.json();
         setError(errData.error || "Failed to load");
@@ -378,52 +554,29 @@ export default function AdminPage() {
         return;
       }
       const json = await res.json();
-      // Normalize any "Super-Hard" to "Super Hard"
       const normalize = (matchups: Matchup[]) =>
         matchups.map((m) => ({
           ...m,
-          difficultyAP: (
-            m.difficultyAP === ("Super-Hard" as string)
-              ? "Super Hard"
-              : m.difficultyAP
-          ) as Difficulty,
-          difficultyTank: (
-            m.difficultyTank === ("Super-Hard" as string)
-              ? "Super Hard"
-              : m.difficultyTank
-          ) as Difficulty,
+          difficultyAP: (m.difficultyAP === ("Super-Hard" as string) ? "Super Hard" : m.difficultyAP) as Difficulty,
+          difficultyTank: (m.difficultyTank === ("Super-Hard" as string) ? "Super Hard" : m.difficultyTank) as Difficulty,
         }));
-      setData({
-        mid: normalize(json.data.mid),
-        top: normalize(json.data.top),
-      });
+      setData({ mid: normalize(json.data.mid), top: normalize(json.data.top) });
       setSha(json.sha);
       setAuthed(true);
       setDirty(false);
-    } catch {
-      setError("Network error loading data");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error loading data"); }
+    finally { setLoading(false); }
   }, []);
 
-  // Initial data load on mount
   useEffect(() => {
     let cancelled = false;
     async function init() {
       const res = await fetch("/api/matchups");
       if (cancelled) return;
-      if (res.status === 401) {
-        setAuthed(false);
-        setLoading(false);
-        return;
-      }
+      if (res.status === 401) { setAuthed(false); setLoading(false); return; }
       if (!res.ok) {
         const errData = await res.json();
-        if (!cancelled) {
-          setError(errData.error || "Failed to load");
-          setLoading(false);
-        }
+        if (!cancelled) { setError(errData.error || "Failed to load"); setLoading(false); }
         return;
       }
       const json = await res.json();
@@ -431,88 +584,53 @@ export default function AdminPage() {
       const normalize = (matchups: Matchup[]) =>
         matchups.map((m) => ({
           ...m,
-          difficultyAP: (
-            m.difficultyAP === ("Super-Hard" as string)
-              ? "Super Hard"
-              : m.difficultyAP
-          ) as Difficulty,
-          difficultyTank: (
-            m.difficultyTank === ("Super-Hard" as string)
-              ? "Super Hard"
-              : m.difficultyTank
-          ) as Difficulty,
+          difficultyAP: (m.difficultyAP === ("Super-Hard" as string) ? "Super Hard" : m.difficultyAP) as Difficulty,
+          difficultyTank: (m.difficultyTank === ("Super-Hard" as string) ? "Super Hard" : m.difficultyTank) as Difficulty,
         }));
-      setData({
-        mid: normalize(json.data.mid),
-        top: normalize(json.data.top),
-      });
+      setData({ mid: normalize(json.data.mid), top: normalize(json.data.top) });
       setSha(json.sha);
       setAuthed(true);
       setDirty(false);
       setLoading(false);
     }
-    init().catch(() => {
-      if (!cancelled) {
-        setError("Network error loading data");
-        setLoading(false);
-      }
-    });
+    init().catch(() => { if (!cancelled) { setError("Network error"); setLoading(false); } });
     return () => { cancelled = true; };
   }, []);
 
-  // Warn on unsaved changes
   useEffect(() => {
     function handleBeforeUnload(e: BeforeUnloadEvent) {
-      if (dirty) {
-        e.preventDefault();
-      }
+      if (dirty) e.preventDefault();
     }
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [dirty]);
 
-  // Save handler
   async function handleSave() {
     if (!data || !sha) return;
     setSaving(true);
     setError("");
     setSuccess("");
-
     try {
       const res = await fetch("/api/matchups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          data,
-          sha,
-          message: `Update matchups via admin: ${new Date().toISOString()}`,
-        }),
+        body: JSON.stringify({ data, sha, message: `Update matchups via admin: ${new Date().toISOString()}` }),
       });
-
       if (!res.ok) {
         const errData = await res.json();
         setError(errData.error || "Failed to save");
         return;
       }
-
       const json = await res.json();
       setSha(json.sha);
       setDirty(false);
       setSuccess("Saved successfully!");
       setTimeout(() => setSuccess(""), 3000);
-    } catch {
-      setError("Network error saving data");
-    } finally {
-      setSaving(false);
-    }
+    } catch { setError("Network error saving"); }
+    finally { setSaving(false); }
   }
 
-  // Matchup update handlers
-  function updateMatchup(
-    lane: "mid" | "top",
-    index: number,
-    updated: Matchup
-  ) {
+  function updateMatchup(lane: "mid" | "top", index: number, updated: Matchup) {
     if (!data) return;
     const newList = [...data[lane]];
     newList[index] = updated;
@@ -530,153 +648,89 @@ export default function AdminPage() {
 
   function addMatchup(lane: "mid" | "top") {
     if (!data) return;
-    const newList = [...data[lane], emptyMatchup()];
-    setData({ ...data, [lane]: newList });
+    setData({ ...data, [lane]: [...data[lane], emptyMatchup()] });
     setDirty(true);
   }
 
-  // Not authed - show login
   if (!authed && !loading) {
-    return (
-      <LoginForm
-        onLogin={() => {
-          setAuthed(true);
-          loadData();
-        }}
-      />
-    );
-  }
-
-  // Loading
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="text-foreground/50">Loading...</div>
-      </div>
-    );
+    return <LoginForm onLogin={() => { setAuthed(true); loadData(); }} />;
   }
 
   const matchups = data ? data[activeTab] : [];
   const filtered = search
-    ? matchups.filter((m) =>
-        m.champion.toLowerCase().includes(search.toLowerCase())
-      )
+    ? matchups.filter((m) => m.champion.toLowerCase().includes(search.toLowerCase()))
     : matchups;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            <span className="text-accent-glow">Matchup</span> Admin
-          </h1>
-          <p className="text-sm text-foreground/50">
-            {data ? `${data.mid.length} mid + ${data.top.length} top matchups` : ""}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {dirty && (
-            <span className="text-xs font-medium text-medium">
-              Unsaved changes
-            </span>
-          )}
-          {success && (
-            <span className="text-xs font-medium text-easy">{success}</span>
-          )}
+      <div className="mb-6 flex items-center gap-4">
+        <h1 className="text-2xl font-bold">Matchup Admin</h1>
+        <div className="ml-auto flex items-center gap-2">
+          {dirty && <span className="text-xs text-medium font-semibold">Unsaved changes</span>}
+          {success && <span className="text-xs text-easy font-semibold">{success}</span>}
+          {error && <span className="text-xs text-hard font-semibold">{error}</span>}
           <button
             onClick={handleSave}
             disabled={saving || !dirty}
-            className="rounded-lg bg-accent px-5 py-2 text-sm font-bold text-white transition hover:bg-accent-glow disabled:opacity-50"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white transition hover:bg-accent-glow disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save to GitHub"}
           </button>
         </div>
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="mb-4 rounded-lg border border-hard/30 bg-hard/10 px-4 py-3 text-sm text-hard">
-          {error}
-          <button
-            onClick={() => setError("")}
-            className="ml-2 font-bold hover:underline"
-          >
-            Dismiss
-          </button>
-        </div>
+      {loading ? (
+        <p className="py-12 text-center text-foreground/40">Loading matchups...</p>
+      ) : (
+        <>
+          <div className="mb-4 flex items-center gap-3">
+            {(["mid", "top"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`rounded-lg px-4 py-2 text-sm font-bold transition ${
+                  activeTab === tab
+                    ? "bg-accent text-white"
+                    : "bg-card text-foreground/50 hover:text-foreground"
+                }`}
+              >
+                {tab === "mid" ? "Mid" : "Top"} ({data?.[tab].length || 0})
+              </button>
+            ))}
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search champion..."
+              className="ml-auto rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
+            />
+            <button
+              onClick={() => addMatchup(activeTab)}
+              className="rounded-lg border border-dashed border-card-border px-3 py-2 text-sm font-semibold text-foreground/50 transition hover:border-accent hover:text-accent-glow"
+            >
+              + Add Matchup
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            {filtered.length === 0 ? (
+              <p className="py-12 text-center text-foreground/40">No matchups found.</p>
+            ) : (
+              filtered.map((m, i) => {
+                const realIndex = matchups.indexOf(m);
+                return (
+                  <MatchupRow
+                    key={`${activeTab}-${realIndex}-${m.champion}`}
+                    matchup={m}
+                    onChange={(updated) => updateMatchup(activeTab, realIndex, updated)}
+                    onDelete={() => deleteMatchup(activeTab, realIndex)}
+                  />
+                );
+              })
+            )}
+          </div>
+        </>
       )}
-
-      {/* Tabs + Search */}
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex gap-1">
-          <button
-            onClick={() => {
-              setActiveTab("mid");
-              setSearch("");
-            }}
-            className={`rounded-lg px-4 py-2 text-sm font-bold transition ${
-              activeTab === "mid"
-                ? "bg-accent text-white"
-                : "bg-card text-foreground/60 hover:text-foreground"
-            }`}
-          >
-            Mid ({data?.mid.length ?? 0})
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("top");
-              setSearch("");
-            }}
-            className={`rounded-lg px-4 py-2 text-sm font-bold transition ${
-              activeTab === "top"
-                ? "bg-accent text-white"
-                : "bg-card text-foreground/60 hover:text-foreground"
-            }`}
-          >
-            Top ({data?.top.length ?? 0})
-          </button>
-        </div>
-
-        <input
-          type="text"
-          placeholder="Search champion..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 rounded-lg border border-card-border bg-card px-4 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
-        />
-
-        <button
-          onClick={() => addMatchup(activeTab)}
-          className="rounded-lg border border-accent/50 px-4 py-2 text-sm font-bold text-accent-glow transition hover:bg-accent/10"
-        >
-          + Add Matchup
-        </button>
-      </div>
-
-      {/* Matchup List */}
-      <div className="space-y-2">
-        {filtered.length === 0 ? (
-          <p className="py-12 text-center text-foreground/40">
-            {search ? "No matchups match your search." : "No matchups yet."}
-          </p>
-        ) : (
-          filtered.map((m) => {
-            // Find actual index in the full array
-            const actualIdx = matchups.indexOf(m);
-            return (
-              <MatchupRow
-                key={`${activeTab}-${actualIdx}`}
-                matchup={m}
-                onChange={(updated) =>
-                  updateMatchup(activeTab, actualIdx, updated)
-                }
-                onDelete={() => deleteMatchup(activeTab, actualIdx)}
-              />
-            );
-          })
-        )}
-      </div>
     </div>
   );
 }

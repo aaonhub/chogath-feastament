@@ -64,29 +64,54 @@ export default function Home() {
 
       {/* Author */}
       <section className="mb-12 overflow-hidden rounded-xl border border-card-border bg-card">
-        <div className="flex flex-col items-center gap-6 p-6 sm:flex-row sm:items-start">
-          <Image
-            src="/images/saku-profile.jpg"
-            alt="Sakuritou's Challenger profile"
-            width={220}
-            height={220}
-            className="shrink-0 rounded-lg border border-card-border"
-          />
+        <div className="flex flex-col items-center gap-6 p-8 sm:flex-row sm:items-start">
+          <div className="flex shrink-0 flex-col gap-3">
+            <Image
+              src="/images/saku-profile.jpg"
+              alt="Sakuritou's Challenger profile"
+              width={300}
+              height={300}
+              className="rounded-lg border border-card-border"
+            />
+            <div className="flex gap-3">
+              <Image
+                src="/images/challenger.jpg"
+                alt="Promoted to Challenger"
+                width={142}
+                height={190}
+                className="flex-1 rounded-lg border border-card-border object-cover"
+              />
+              <Image
+                src="/images/saku-opgg.jpg"
+                alt="Sakuritou's OP.GG stats"
+                width={142}
+                height={190}
+                className="flex-1 rounded-lg border border-card-border object-cover"
+              />
+            </div>
+          </div>
           <div>
-            <h2 className="mb-2 text-2xl font-bold">Sakuritou</h2>
-            <p className="mb-3 text-sm leading-relaxed text-foreground/70">
+            <h2 className="mb-3 text-3xl font-bold">Sakuritou</h2>
+            <p className="mb-3 text-base leading-relaxed text-foreground/70">
               Multi-season Challenger Cho&apos;Gath player and one-trick. Rank 1
               Cho&apos;Gath worldwide, peaked 1465 LP Rank 25 on EUW in Season
               14. Holds the record for highest LP ever achieved by a Cho&apos;Gath
               main.
             </p>
-            <p className="mb-4 text-sm leading-relaxed text-foreground/70">
+            <p className="mb-4 text-base leading-relaxed text-foreground/70">
               Made with help from{" "}
-              <span className="text-foreground/90">Cramble</span>,{" "}
-              <span className="text-foreground/90">Captain Orb</span>, and{" "}
-              <span className="text-foreground/90">Swaggy</span>. All matchups
+              <span className="text-foreground/90 font-semibold">Cramble</span>,{" "}
+              <span className="text-foreground/90 font-semibold">Captain Orb</span>, and{" "}
+              <span className="text-foreground/90 font-semibold">Swaggy</span>. All matchups
               are based on GM+ experience.
             </p>
+            <Image
+              src="/images/saku-rank1.jpg"
+              alt="Rank 1 All Time"
+              width={400}
+              height={100}
+              className="mb-4 rounded-lg border border-card-border"
+            />
             <div className="flex flex-wrap gap-2">
               {socials.map((s) => (
                 <a
@@ -94,7 +119,7 @@ export default function Home() {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-card-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/70 transition hover:border-accent hover:text-accent-glow"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-card-border bg-background px-3 py-2 text-sm font-medium text-foreground/70 transition hover:border-accent hover:text-accent-glow"
                 >
                   {s.icon}
                   {s.label}

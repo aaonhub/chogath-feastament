@@ -251,143 +251,106 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
     };
   }, [handleKeyDown]);
 
-  const [focus, setFocus] = useState<"none" | "ap" | "tank">("none");
+  const [buildTab, setBuildTab] = useState<"ap" | "tank">(
+    () => preferredSide(m.difficultyAP, m.difficultyTank) === "tank" ? "tank" : "ap"
+  );
   const normDiff = (d: string) => (d === "Super-Hard" ? "Super Hard" : d);
   const pref = preferredSide(m.difficultyAP, m.difficultyTank);
 
+  const rune = buildTab === "ap" ? m.runeAP : m.runeTank;
+  const items = buildTab === "ap" ? m.itemsAP : m.itemsTank;
+  const diff = buildTab === "ap" ? m.difficultyAP : m.difficultyTank;
+  const order = buildTab === "ap" ? m.abilityOrderAP : m.abilityOrderTank;
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:items-center sm:p-8"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-6xl rounded-2xl border border-card-border bg-card shadow-2xl">
+      <div className="relative w-full max-w-5xl rounded-2xl border border-card-border bg-card shadow-2xl">
         {/* Header */}
         <div className="flex items-center gap-5 border-b border-card-border px-8 py-5">
-          <ChampionImage
-            champKey={m.championKey}
-            name={m.champion}
-            size={72}
-          />
+          <ChampionImage champKey={m.championKey} name={m.champion} size={72} />
           <div className="flex-1">
             <h2 className="text-3xl font-bold">{m.champion}</h2>
             <div className="mt-1.5 flex gap-3">
               {m.difficultyAP && (
-                <span className="text-sm">
-                  AP:{" "}
-                  <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyAP]}`}>
-                    {normDiff(m.difficultyAP)}
-                  </span>
-                </span>
+                <span className="text-sm">AP: <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyAP]}`}>{normDiff(m.difficultyAP)}</span></span>
               )}
               {m.difficultyTank && (
-                <span className="text-sm">
-                  Tank:{" "}
-                  <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyTank]}`}>
-                    {normDiff(m.difficultyTank)}
-                  </span>
-                </span>
+                <span className="text-sm">Tank: <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyTank]}`}>{normDiff(m.difficultyTank)}</span></span>
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 transition hover:bg-card-border hover:text-foreground"
-          >
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 transition hover:bg-card-border hover:text-foreground">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Body: Advice left, AP/Tank right */}
+        {/* Body: Advice left, tabbed build right */}
         <div className="flex flex-col lg:flex-row">
-          {/* Advice — left column */}
+          {/* Advice */}
           <div className="flex-1 border-b border-card-border px-8 py-6 lg:border-b-0 lg:border-r">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-foreground/40">
-              Matchup Advice
-            </h3>
-            <p className="text-base leading-relaxed text-foreground/80">
-              {m.advice}
-            </p>
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-foreground/40">Matchup Advice</h3>
+            <p className="text-base leading-relaxed text-foreground/80">{m.advice}</p>
           </div>
 
-          {/* AP & Tank — right column, stacked */}
-          <div className="flex w-full flex-col lg:w-[420px] lg:shrink-0">
-            {/* AP */}
-            <div
-              className={`cursor-pointer border-b border-card-border p-6 transition-all duration-200 ${DIFF_BG_TINT[m.difficultyAP] ?? ""} ${pref === "ap" || pref === "both" ? "ring-2 ring-inset ring-amber-500/40" : ""} ${focus === "tank" ? "opacity-25 scale-[0.97]" : ""} ${focus === "ap" ? "scale-[1.02] shadow-lg shadow-accent/10 z-10 relative" : ""}`}
-              onClick={() => setFocus(focus === "ap" ? "none" : "ap")}
-            >
-              <div className="mb-4 flex items-center gap-2">
-                <div className="h-3.5 w-3.5 rounded-full bg-[#7b2ff2]" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">
-                  AP Cho&apos;Gath
-                </h3>
+          {/* Build panel with tabs */}
+          <div className="w-full lg:w-[440px] lg:shrink-0">
+            {/* Tab bar */}
+            <div className="flex border-b border-card-border">
+              <button
+                onClick={() => setBuildTab("ap")}
+                className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-bold uppercase tracking-wider transition ${
+                  buildTab === "ap"
+                    ? "border-b-2 border-[#7b2ff2] text-accent-glow bg-[#7b2ff2]/5"
+                    : "text-foreground/40 hover:text-foreground/70"
+                }`}
+              >
+                <div className="h-2.5 w-2.5 rounded-full bg-[#7b2ff2]" />
+                AP
                 {m.difficultyAP && <DiffBadge diff={m.difficultyAP} />}
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                {m.runeAP && (
-                  <DetailRow label="Keystone">
-                    <div className="flex items-center gap-2">
-                      <RuneIcons raw={m.runeAP} />
-                      <span className="text-sm text-foreground/70">{m.runeAP}</span>
-                    </div>
-                  </DetailRow>
-                )}
-                {m.abilityOrderAP && (
-                  <DetailRow label="Skill Order">
-                    <SkillOrderIcons order={m.abilityOrderAP} />
-                  </DetailRow>
-                )}
-              </div>
-              {m.itemsAP && (
-                <div className="mt-3">
-                  <DetailRow label="Items">
-                    <p className="text-sm leading-relaxed text-foreground/70">{m.itemsAP}</p>
-                    <ItemThumbnails text={m.itemsAP} />
-                  </DetailRow>
-                </div>
-              )}
+                {pref === "ap" && <span className="text-[10px] text-amber-400">★</span>}
+              </button>
+              <button
+                onClick={() => setBuildTab("tank")}
+                className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-bold uppercase tracking-wider transition ${
+                  buildTab === "tank"
+                    ? "border-b-2 border-blue-500 text-blue-400 bg-blue-500/5"
+                    : "text-foreground/40 hover:text-foreground/70"
+                }`}
+              >
+                <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                Tank
+                {m.difficultyTank && <DiffBadge diff={m.difficultyTank} />}
+                {pref === "tank" && <span className="text-[10px] text-amber-400">★</span>}
+              </button>
             </div>
 
-            {/* Tank */}
-            <div
-              className={`cursor-pointer p-6 transition-all duration-200 ${DIFF_BG_TINT[m.difficultyTank] ?? ""} ${pref === "tank" || pref === "both" ? "ring-2 ring-inset ring-amber-500/40" : ""} ${focus === "ap" ? "opacity-25 scale-[0.97]" : ""} ${focus === "tank" ? "scale-[1.02] shadow-lg shadow-accent/10 z-10 relative" : ""}`}
-              onClick={() => setFocus(focus === "tank" ? "none" : "tank")}
-            >
-              <div className="mb-4 flex items-center gap-2">
-                <div className="h-3.5 w-3.5 rounded-full bg-[#3b82f6]" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">
-                  Tank Cho&apos;Gath
-                </h3>
-                {m.difficultyTank && <DiffBadge diff={m.difficultyTank} />}
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                {m.runeTank && (
-                  <DetailRow label="Keystone">
-                    <div className="flex items-center gap-2">
-                      <RuneIcons raw={m.runeTank} />
-                      <span className="text-sm text-foreground/70">{m.runeTank}</span>
-                    </div>
-                  </DetailRow>
-                )}
-                {m.abilityOrderTank && (
-                  <DetailRow label="Skill Order">
-                    <SkillOrderIcons order={m.abilityOrderTank} />
-                  </DetailRow>
-                )}
-              </div>
-              {m.itemsTank && (
-                <div className="mt-3">
-                  <DetailRow label="Items">
-                    <p className="text-sm leading-relaxed text-foreground/70">{m.itemsTank}</p>
-                    <ItemThumbnails text={m.itemsTank} />
-                  </DetailRow>
-                </div>
+            {/* Active tab content */}
+            <div className={`p-6 ${DIFF_BG_TINT[diff] ?? ""} ${(pref === buildTab || pref === "both") ? "ring-2 ring-inset ring-amber-500/40" : ""}`}>
+              {rune && (
+                <DetailRow label="Keystone">
+                  <div className="flex items-center gap-3">
+                    <RuneIcons raw={rune} />
+                    <span className="text-base text-foreground/70">{rune}</span>
+                  </div>
+                </DetailRow>
+              )}
+              {order && (
+                <DetailRow label="Skill Order">
+                  <SkillOrderIcons order={order} />
+                </DetailRow>
+              )}
+              {items && (
+                <DetailRow label="Items">
+                  <p className="text-sm leading-relaxed text-foreground/70">{items}</p>
+                  <ItemThumbnails text={items} />
+                </DetailRow>
               )}
             </div>
           </div>
