@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
+import { ITEMS as ITEM_DATA, getItemImageUrl } from "@/data/items";
 
 type Difficulty = "Easy" | "Medium" | "Hard" | "Super Hard";
 
@@ -228,6 +229,10 @@ function ItemsField({ value, onChange }: { value: string; onChange: (v: string) 
     if (ref.current) { ref.current.style.height = "auto"; ref.current.style.height = Math.max(ref.current.scrollHeight, 72) + "px"; }
   }, [value]);
   const filtered = query.length > 0 ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : [];
+  function itemId(name: string): number | null {
+    const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
+    return match?.id ?? null;
+  }
   function insertItem(itemName: string) {
     const separator = value.trim() ? ", " : "";
     onChange(value + separator + itemName);
@@ -246,12 +251,16 @@ function ItemsField({ value, onChange }: { value: string; onChange: (v: string) 
           className="w-full rounded-lg border border-accent/30 bg-accent/5 px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-accent focus:outline-none" />
         {showSuggestions && filtered.length > 0 && (
           <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-card-border bg-card py-1 shadow-xl">
-            {filtered.map((name) => (
-              <button key={name} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertItem(name)}
-                className="w-full px-3 py-1.5 text-left text-sm text-foreground/70 transition hover:bg-accent/20 hover:text-foreground">
-                {name}
-              </button>
-            ))}
+            {filtered.map((name) => {
+              const id = itemId(name);
+              return (
+                <button key={name} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertItem(name)}
+                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-foreground/70 transition hover:bg-accent/20 hover:text-foreground">
+                  {id && <Image src={getItemImageUrl(id)} alt="" width={24} height={24} className="h-6 w-6 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {name}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
