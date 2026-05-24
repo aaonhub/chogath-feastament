@@ -251,16 +251,74 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
     };
   }, [handleKeyDown]);
 
-  const [buildTab, setBuildTab] = useState<"ap" | "tank">(
-    () => preferredSide(m.difficultyAP, m.difficultyTank) === "tank" ? "tank" : "ap"
-  );
+  const [focus, setFocus] = useState<"none" | "ap" | "tank">("none");
   const normDiff = (d: string) => (d === "Super-Hard" ? "Super Hard" : d);
   const pref = preferredSide(m.difficultyAP, m.difficultyTank);
 
-  const rune = buildTab === "ap" ? m.runeAP : m.runeTank;
-  const items = buildTab === "ap" ? m.itemsAP : m.itemsTank;
-  const diff = buildTab === "ap" ? m.difficultyAP : m.difficultyTank;
-  const order = buildTab === "ap" ? m.abilityOrderAP : m.abilityOrderTank;
+  function formatAdvice(text: string): string[] {
+    const sentences = text.split(/(?<=\.)\s+/);
+    const paragraphs: string[] = [];
+    let current = "";
+    for (const s of sentences) {
+      current += (current ? " " : "") + s;
+      if (current.length > 200) {
+        paragraphs.push(current);
+        current = "";
+      }
+    }
+    if (current) paragraphs.push(current);
+    return paragraphs;
+  }
+
+  function BuildSection({ type, rune, items, diff, order }: {
+    type: "ap" | "tank"; rune: string; items: string; diff: Difficulty; order: string;
+  }) {
+    const isAP = type === "ap";
+    const isFocused = focus === type;
+    const isDimmed = focus !== "none" && focus !== type;
+    const icon = isAP ? "/images/mage-icon.webp" : "/images/tank-icon.png";
+
+    return (
+      <div
+        className={`cursor-pointer p-5 transition-all duration-200 ${DIFF_BG_TINT[diff] ?? ""} ${isDimmed ? "opacity-25 scale-[0.97]" : ""} ${isFocused ? "scale-[1.02] shadow-lg shadow-accent/10 z-10 relative ring-2 ring-inset ring-amber-500/40" : ""} ${focus === "none" && (pref === type || pref === "both") ? "ring-2 ring-inset ring-amber-500/40" : ""}`}
+        onClick={() => setFocus(focus === type ? "none" : type)}
+      >
+        <div className="mb-3 flex items-center gap-2">
+          <Image src={icon} alt={isAP ? "AP" : "Tank"} width={22} height={22} className="h-[22px] w-[22px]" />
+          <h3 className={`text-sm font-bold uppercase tracking-wider ${isAP ? "text-accent-glow" : "text-blue-400"}`}>
+            {isAP ? "AP" : "Tank"}
+          </h3>
+          <DiffBadge diff={diff} />
+        </div>
+
+        <div className="flex items-start gap-4">
+          {rune && (
+            <div className="shrink-0">
+              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-accent-glow/70">Rune</span>
+              <div className="flex items-center gap-1.5">
+                <RuneIcons raw={rune} />
+                <span className="text-xs text-foreground/60">{rune}</span>
+              </div>
+            </div>
+          )}
+          {order && (
+            <div className="shrink-0">
+              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-accent-glow/70">Skills</span>
+              <SkillOrderIcons order={order} />
+            </div>
+          )}
+        </div>
+
+        {items && (
+          <div className="mt-3">
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-accent-glow/70">Items</span>
+            <p className="text-sm leading-relaxed text-foreground/70">{items}</p>
+            <ItemThumbnails text={items} />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -269,13 +327,13 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-5xl rounded-2xl border border-card-border bg-card shadow-2xl">
+      <div className="relative w-full max-w-6xl rounded-2xl border border-card-border bg-card shadow-2xl">
         {/* Header */}
-        <div className="flex items-center gap-5 border-b border-card-border px-8 py-5">
-          <ChampionImage champKey={m.championKey} name={m.champion} size={72} />
+        <div className="flex items-center gap-5 border-b border-card-border px-8 py-4">
+          <ChampionImage champKey={m.championKey} name={m.champion} size={64} />
           <div className="flex-1">
-            <h2 className="text-3xl font-bold">{m.champion}</h2>
-            <div className="mt-1.5 flex gap-3">
+            <h2 className="text-2xl font-bold">{m.champion}</h2>
+            <div className="mt-1 flex gap-3">
               {m.difficultyAP && (
                 <span className="text-sm">AP: <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyAP]}`}>{normDiff(m.difficultyAP)}</span></span>
               )}
@@ -291,68 +349,20 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
           </button>
         </div>
 
-        {/* Body: Advice left, tabbed build right */}
+        {/* Body: Advice left, both builds stacked right */}
         <div className="flex flex-col lg:flex-row">
-          {/* Advice */}
-          <div className="flex-1 border-b border-card-border px-8 py-6 lg:border-b-0 lg:border-r">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-foreground/40">Matchup Advice</h3>
-            <p className="text-base leading-relaxed text-foreground/80">{m.advice}</p>
+          <div className="flex-1 px-8 py-5">
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/40">Matchup Advice</h3>
+            <div className="space-y-3">
+              {formatAdvice(m.advice).map((p, i) => (
+                <p key={i} className="text-base leading-relaxed text-foreground/80">{p}</p>
+              ))}
+            </div>
           </div>
 
-          {/* Build panel with tabs */}
-          <div className="w-full lg:w-[440px] lg:shrink-0">
-            {/* Tab bar */}
-            <div className="flex border-b border-card-border">
-              <button
-                onClick={() => setBuildTab("ap")}
-                className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-bold uppercase tracking-wider transition ${
-                  buildTab === "ap"
-                    ? "border-b-2 border-[#7b2ff2] text-accent-glow bg-[#7b2ff2]/5"
-                    : "text-foreground/40 hover:text-foreground/70"
-                }`}
-              >
-                <div className="h-2.5 w-2.5 rounded-full bg-[#7b2ff2]" />
-                AP
-                {m.difficultyAP && <DiffBadge diff={m.difficultyAP} />}
-                {pref === "ap" && <span className="text-[10px] text-amber-400">★</span>}
-              </button>
-              <button
-                onClick={() => setBuildTab("tank")}
-                className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-bold uppercase tracking-wider transition ${
-                  buildTab === "tank"
-                    ? "border-b-2 border-blue-500 text-blue-400 bg-blue-500/5"
-                    : "text-foreground/40 hover:text-foreground/70"
-                }`}
-              >
-                <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                Tank
-                {m.difficultyTank && <DiffBadge diff={m.difficultyTank} />}
-                {pref === "tank" && <span className="text-[10px] text-amber-400">★</span>}
-              </button>
-            </div>
-
-            {/* Active tab content */}
-            <div className={`p-6 ${DIFF_BG_TINT[diff] ?? ""} ${(pref === buildTab || pref === "both") ? "ring-2 ring-inset ring-amber-500/40" : ""}`}>
-              {rune && (
-                <DetailRow label="Keystone">
-                  <div className="flex items-center gap-3">
-                    <RuneIcons raw={rune} />
-                    <span className="text-base text-foreground/70">{rune}</span>
-                  </div>
-                </DetailRow>
-              )}
-              {order && (
-                <DetailRow label="Skill Order">
-                  <SkillOrderIcons order={order} />
-                </DetailRow>
-              )}
-              {items && (
-                <DetailRow label="Items">
-                  <p className="text-sm leading-relaxed text-foreground/70">{items}</p>
-                  <ItemThumbnails text={items} />
-                </DetailRow>
-              )}
-            </div>
+          <div className="flex w-full flex-col lg:w-[480px] lg:shrink-0">
+            <BuildSection type="ap" rune={m.runeAP} items={m.itemsAP} diff={m.difficultyAP} order={m.abilityOrderAP} />
+            <BuildSection type="tank" rune={m.runeTank} items={m.itemsTank} diff={m.difficultyTank} order={m.abilityOrderTank} />
           </div>
         </div>
       </div>
