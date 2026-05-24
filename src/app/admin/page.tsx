@@ -157,23 +157,21 @@ function RuneSelector({ value, onChange }: { value: string; onChange: (v: string
 }
 
 function AbilityOrderEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const isPreset = COMMON_ORDERS.includes(value);
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-1">
+      <select value={isPreset ? value : "__custom__"} onChange={(e) => { if (e.target.value !== "__custom__") onChange(e.target.value); }}
+        className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-sm text-foreground focus:border-accent focus:outline-none">
         {COMMON_ORDERS.map((order) => (
-          <button key={order} type="button" onClick={() => onChange(order)}
-            className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition ${value === order ? "border-accent bg-accent/20 text-accent-glow" : "border-card-border bg-background text-foreground/40 hover:text-foreground/70"}`}>
-            {order.match(/[QWER]/g)?.map((letter, i) => {
-              const spell = CHO_SPELLS.find((s) => s.key === letter);
-              return spell ? <Image key={i} src={spell.img} alt={letter} width={16} height={16} className="h-4 w-4 rounded" /> : null;
-            })}
-            <span className="ml-0.5">{order.length > 20 ? order.slice(0, 18) + "…" : order}</span>
-          </button>
+          <option key={order} value={order}>{order}</option>
         ))}
-      </div>
-      <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
-        placeholder="Custom order..." />
+        <option value="__custom__">Custom...</option>
+      </select>
+      {!isPreset && (
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
+          placeholder="Type custom skill order..." />
+      )}
     </div>
   );
 }
@@ -324,7 +322,8 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") tryClose(); }
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+    document.documentElement.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
   }, [onClose, modalDirty]);
 
   return (
