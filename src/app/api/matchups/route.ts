@@ -36,9 +36,11 @@ export async function GET(request: NextRequest) {
       { error: "Unexpected response from GitHub" },
       { status: 500 }
     );
-  } catch {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error("Failed to fetch matchups:", msg);
     return NextResponse.json(
-      { error: "Failed to fetch matchups from GitHub" },
+      { error: `Failed to fetch matchups from GitHub: ${msg}` },
       { status: 500 }
     );
   }

@@ -21,7 +21,7 @@ export function createSession(
   response.cookies.set("admin-session", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "lax",
     path: "/",
     maxAge: TOKEN_MAX_AGE_S,
   });
