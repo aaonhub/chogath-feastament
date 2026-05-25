@@ -7,26 +7,54 @@ import { ITEMS as LOCAL_ITEMS } from "@/data/items";
 
 const DDRAGON_ITEM = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item";
 
-function useItemIdMap(): Record<string, number> {
-  const [idMap, setIdMap] = useState<Record<string, number>>({});
+interface DDItem {
+  id: number;
+  gold: number;
+  stats: string[];
+  passive: string;
+}
+
+function useItemDb(): Record<string, DDItem> {
+  const [db, setDb] = useState<Record<string, DDItem>>({});
   useEffect(() => {
     fetch("https://ddragon.leagueoflegends.com/cdn/15.10.1/data/en_US/item.json")
       .then((r) => r.json())
       .then((d) => {
-        const map: Record<string, number> = {};
-        for (const [id, item] of Object.entries(d.data as Record<string, { name: string }>)) {
-          map[item.name] = parseInt(id);
+        const map: Record<string, DDItem> = {};
+        const seen = new Set<string>();
+        for (const [id, item] of Object.entries(d.data as Record<string, {
+          name: string; gold?: { total?: number }; description?: string; plaintext?: string;
+        }>)) {
+          if (seen.has(item.name)) continue;
+          seen.add(item.name);
+          const desc = item.description || "";
+          const stripped = desc.replace(/<[^>]+>/g, "");
+          const statLines: string[] = [];
+          const passiveParts: string[] = [];
+          for (const part of stripped.split(/(?<=\d)\s*(?=[A-Z])/)) {
+            if (/^\d/.test(part.trim()) && part.length < 40) {
+              statLines.push(part.trim());
+            } else if (part.trim()) {
+              passiveParts.push(part.trim());
+            }
+          }
+          map[item.name] = {
+            id: parseInt(id),
+            gold: item.gold?.total || 0,
+            stats: statLines.length > 0 ? statLines : (item.plaintext ? [item.plaintext] : []),
+            passive: passiveParts.join(" ") || item.plaintext || "",
+          };
         }
-        setIdMap(map);
+        setDb(map);
       })
       .catch(() => {});
   }, []);
-  return idMap;
+  return db;
 }
 
-function getItemImgSrc(name: string | undefined, imgIndex: number, idMap: Record<string, number>): string {
+function getItemImgSrc(name: string | undefined, imgIndex: number, db: Record<string, DDItem>): string {
   if (name) {
-    const ddId = idMap[name] ?? LOCAL_ITEMS.find((i) => i.name === name)?.id;
+    const ddId = db[name]?.id ?? LOCAL_ITEMS.find((i) => i.name === name)?.id;
     if (ddId) return `${DDRAGON_ITEM}/${ddId}.png`;
   }
   return `/images/tierlist/item_${imgIndex}.jpg`;
@@ -105,8 +133,9 @@ function toTierRows(tiers: Array<{ tier: string; items: Array<{ imgIndex: number
 const tankTiers = toTierRows(matchupData.tankItems);
 const apTiers = toTierRows(matchupData.apItems);
 
-function ItemIcon({ entry, onClick, idMap }: { entry: ItemEntry; onClick: () => void; idMap: Record<string, number> }) {
-  const src = getItemImgSrc(entry.name, entry.imgIndex, idMap);
+function ItemIcon({ entry, onClick, db }: { entry: ItemEntry; onClick: () => void; db: Record<string, DDItem> }) {
+  const src = getItemImgSrc(entry.name, entry.imgIndex, db);
+  const info = entry.name ? db[entry.name] : undefined;
   return (
     <div className="group/item relative">
       <button onClick={onClick}>
@@ -116,16 +145,22 @@ function ItemIcon({ entry, onClick, idMap }: { entry: ItemEntry; onClick: () => 
       {entry.name && (
         <div className="pointer-events-none absolute top-full left-1/2 z-20 mt-2 -translate-x-1/2 rounded-lg border border-card-border bg-[#010409] px-3 py-2 shadow-xl w-48 opacity-0 group-hover/item:opacity-100 transition">
           <p className="text-xs font-bold text-white">{entry.name}</p>
-          {entry.detail && <p className="text-[10px] font-semibold text-amber-400">{entry.detail.gold}g</p>}
+          {(info || entry.detail) && <p className="text-[10px] font-semibold text-amber-400">{(info?.gold || entry.detail?.gold) ?? ""}g</p>}
         </div>
       )}
     </div>
   );
 }
 
-function ItemModal({ entry, onClose, idMap }: { entry: ItemEntry; onClose: () => void; idMap: Record<string, number> }) {
-  const d = entry.detail;
-  const src = getItemImgSrc(entry.name, entry.imgIndex, idMap);
+function ItemModal({ entry, onClose, db }: { entry: ItemEntry; onClose: () => void; db: Record<string, DDItem> }) {
+  const hardcoded = entry.detail;
+  const live = entry.name ? db[entry.name] : undefined;
+  const src = getItemImgSrc(entry.name, entry.imgIndex, db);
+  const gold = hardcoded?.gold ?? live?.gold;
+  const stats = hardcoded?.stats ?? live?.stats ?? [];
+  const passive = hardcoded?.passive ?? live?.passive ?? "";
+  const note = hardcoded?.note;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="rounded-2xl border border-card-border bg-card shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
@@ -135,7 +170,7 @@ function ItemModal({ entry, onClose, idMap }: { entry: ItemEntry; onClose: () =>
             className="h-20 w-20 shrink-0 rounded-lg border border-card-border" />
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white">{entry.name || "Unknown Item"}</h2>
-            {d && <p className="mt-1 text-lg font-semibold text-amber-400">{d.gold} gold</p>}
+            {gold != null && gold > 0 && <p className="mt-1 text-lg font-semibold text-amber-400">{gold} gold</p>}
           </div>
           <button onClick={onClose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-foreground/40 hover:text-foreground hover:bg-card-border">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -144,52 +179,49 @@ function ItemModal({ entry, onClose, idMap }: { entry: ItemEntry; onClose: () =>
           </button>
         </div>
 
-        {d && (
-          <div className="p-6 space-y-4">
-            {/* Stats */}
+        <div className="p-6 space-y-4">
+          {stats.length > 0 && (
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/40 mb-2">Stats</h3>
               <div className="flex flex-wrap gap-2">
-                {d.stats.map((s, i) => (
+                {stats.map((s, i) => (
                   <span key={i} className="rounded bg-card-border/50 px-2.5 py-1 text-sm font-medium text-foreground/80">{s}</span>
                 ))}
               </div>
             </div>
+          )}
 
-            {/* Passive */}
+          {passive && (
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/40 mb-2">Passive</h3>
-              {d.passive.split("\n").map((line, i) => (
+              {passive.split("\n").map((line, i) => (
                 <p key={i} className="text-sm leading-relaxed text-foreground/70 mb-1 last:mb-0">{line}</p>
               ))}
             </div>
+          )}
 
-            {/* Cho'Gath Note */}
-            {d.note && (
-              <div className="rounded-lg bg-accent/10 border border-accent/20 px-4 py-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-accent-glow mb-1">Cho&apos;Gath Note</h3>
-                <p className="text-sm leading-relaxed text-foreground/70">{d.note}</p>
-              </div>
-            )}
-          </div>
-        )}
+          {note && (
+            <div className="rounded-lg bg-accent/10 border border-accent/20 px-4 py-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent-glow mb-1">Cho&apos;Gath Note</h3>
+              <p className="text-sm leading-relaxed text-foreground/70">{note}</p>
+            </div>
+          )}
 
-        {!d && (
-          <div className="p-6">
-            <p className="text-sm text-foreground/40">Item details not yet available.</p>
-          </div>
-        )}
+          {!passive && stats.length === 0 && (
+            <p className="text-sm text-foreground/40">Item details loading...</p>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function TierList({ title, tiers, icon, onItemClick, idMap }: {
+function TierList({ title, tiers, icon, onItemClick, db }: {
   title: string;
   tiers: { tier: string; label: string; items: ItemEntry[] }[];
   icon: string;
   onItemClick: (entry: ItemEntry) => void;
-  idMap: Record<string, number>;
+  db: Record<string, DDItem>;
 }) {
   return (
     <div className="flex-1 min-w-0">
@@ -205,7 +237,7 @@ function TierList({ title, tiers, icon, onItemClick, idMap }: {
             </div>
             <div className="flex flex-wrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[80px]">
               {row.items.map((entry) => (
-                <ItemIcon key={entry.imgIndex} entry={entry} onClick={() => onItemClick(entry)} idMap={idMap} />
+                <ItemIcon key={entry.imgIndex} entry={entry} onClick={() => onItemClick(entry)} db={db} />
               ))}
             </div>
           </div>
@@ -217,7 +249,7 @@ function TierList({ title, tiers, icon, onItemClick, idMap }: {
 
 export default function ItemsPage() {
   const [selected, setSelected] = useState<ItemEntry | null>(null);
-  const idMap = useItemIdMap();
+  const db = useItemDb();
   return (
     <div className="mx-auto px-4 py-8" style={{ maxWidth: "1600px" }}>
       <h1 className="mb-1 text-3xl font-bold">Item Tier List</h1>
@@ -225,10 +257,10 @@ export default function ItemsPage() {
         Sakuritou&apos;s item rankings for Cho&apos;Gath. Click for details. Order within tiers doesn&apos;t matter.
       </p>
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-6">
-        <TierList title="Tank" tiers={tankTiers} icon="/images/tank-icon.png" onItemClick={setSelected} idMap={idMap} />
-        <TierList title="AP" tiers={apTiers} icon="/images/mage-icon.webp" onItemClick={setSelected} idMap={idMap} />
+        <TierList title="Tank" tiers={tankTiers} icon="/images/tank-icon.png" onItemClick={setSelected} db={db} />
+        <TierList title="AP" tiers={apTiers} icon="/images/mage-icon.webp" onItemClick={setSelected} db={db} />
       </div>
-      {selected && <ItemModal entry={selected} onClose={() => setSelected(null)} idMap={idMap} />}
+      {selected && <ItemModal entry={selected} onClose={() => setSelected(null)} db={db} />}
     </div>
   );
 }
