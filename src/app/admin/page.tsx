@@ -332,13 +332,14 @@ function SortableTierItem({ item, id, onChange, onRemove, itemNames, itemIdMap }
     ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
     : itemNames.slice(0, 8);
 
+  const imgSrc = (() => {
+    if (item.name && itemIdMap?.[item.name]) return `${DDRAGON_ITEM}/${itemIdMap[item.name]}.png`;
+    const local = ITEM_DATA.find((i) => i.name === item.name);
+    if (local) return `${DDRAGON_ITEM}/${local.id}.png`;
+    return `/images/tierlist/item_${item.imgIndex}.jpg`;
+  })();
+
   return (
-    const imgSrc = (() => {
-      if (item.name && itemIdMap?.[item.name]) return `${DDRAGON_ITEM}/${itemIdMap[item.name]}.png`;
-      const local = ITEM_DATA.find((i) => i.name === item.name);
-      if (local) return `${DDRAGON_ITEM}/${local.id}.png`;
-      return `/images/tierlist/item_${item.imgIndex}.jpg`;
-    })();
     <div ref={setNodeRef} style={style} className="flex flex-col items-center gap-1 w-[90px]">
       <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
         <Image src={imgSrc} alt={item.name || ""} width={64} height={64}
