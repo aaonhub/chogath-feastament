@@ -2,107 +2,101 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ITEMS, getItemImageUrl } from "@/data/items";
 
 const TIER_COLORS: Record<string, string> = {
-  S: "bg-[#e06666]",
-  A: "bg-[#e69138]",
-  B: "bg-[#f1c232]",
-  C: "bg-[#ffd966]",
-  D: "bg-[#b1ba58]",
-  SIT: "bg-[#cccccc] text-black",
+  S: "bg-[#e06666]", A: "bg-[#e69138]", B: "bg-[#f1c232]",
+  C: "bg-[#ffd966]", D: "bg-[#b1ba58]", SIT: "bg-[#cccccc] text-black",
 };
+
+interface ItemDetail {
+  gold: number;
+  stats: string[];
+  passive: string;
+  note?: string;
+}
 
 interface ItemEntry {
   imgIndex: number;
   name?: string;
-  gold?: number;
-  desc?: string;
-  ddId?: number;
+  detail?: ItemDetail;
 }
 
-const ITEM_INFO: Record<string, { gold: number; desc: string }> = {
-  "Kaenic Rookern": { gold: 2900, desc: "400 HP, 80 MR. Spell shield after not taking magic damage for 15s." },
-  "Warmog's Armor": { gold: 3100, desc: "1000 HP. Rapidly regenerate Health out of combat with 2000+ bonus HP." },
-  "Jak'Sho": { gold: 2800, desc: "Armor and MR that increase in extended combat." },
-  "Hollow Radiance": { gold: 2800, desc: "400 HP, 40 MR. Immolate burn + shield on immobilize." },
-  "Unending Despair": { gold: 2800, desc: "400 HP, 25 Armor, 25 MR. Drain nearby enemies for Health every 4s." },
-  "Heartsteel": { gold: 3000, desc: "900 HP. Charge up attacks to deal bonus damage and gain permanent max HP." },
-  "Fimbulwinter": { gold: 2400, desc: "550 HP, 860 Mana. Shield when immobilizing or slowing enemies." },
-  "Force of Nature": { gold: 2800, desc: "400 HP, 55 MR, 4% MS. Gain 70 bonus MR and 6% MS after taking magic damage." },
-  "Abyssal Mask": { gold: 2650, desc: "350 HP, 45 MR. Nearby enemies take 12% more magic damage." },
-  "Dead Man's Plate": { gold: 2900, desc: "350 HP, 55 Armor, 4% MS. Build momentum for bonus MS and empowered attack." },
-  "Sunfire Aegis": { gold: 2700, desc: "350 HP, 50 Armor. Immolate deals magic damage per second to nearby enemies." },
-  "Bramble Vest": { gold: 800, desc: "30 Armor. Attackers take magic damage and receive 40% Grievous Wounds." },
-  "Frozen Heart": { gold: 2500, desc: "75 Armor, 400 Mana, 20 AH. Reduce nearby enemy Attack Speed by 20%." },
-  "Randuin's Omen": { gold: 2700, desc: "350 HP, 75 Armor. 30% less crit damage. Activate to slow nearby enemies." },
-  "Thornmail": { gold: 2450, desc: "150 HP, 75 Armor. Attackers take magic damage and 40% Grievous Wounds." },
-  "Gargoyle Stoneplate": { gold: 3150, desc: "60 Armor, 60 MR. Gain stacking resistances in combat, activate for shield." },
-  "Luden's Companion": { gold: 2750, desc: "100 AP, 600 Mana, 10 AH. Damaging abilities fire bonus magic damage shots." },
-  "Shurelya's Battlesong": { gold: 2200, desc: "50 AP, 15 AH, 4% MS. Activate to speed up nearby allies." },
-  "Rod of Ages": { gold: 2600, desc: "45 AP, 350 HP, 400 Mana. Gains stats every minute for 10 minutes." },
-  "Malignance": { gold: 2700, desc: "90 AP, 600 Mana, 15 AH. +20 Ultimate AH. Ult creates a damage zone." },
-  "Horizon Focus": { gold: 2900, desc: "110 AP, 25 AH. Lightning strikes champions hit at 600+ range or immobilized." },
-  "Boots of Swiftness": { gold: 1000, desc: "55 MS. Reduce slow effectiveness by 25%." },
-  "Void Staff": { gold: 3000, desc: "95 AP, 40% Magic Penetration." },
-  "Cosmic Drive": { gold: 3000, desc: "70 AP, 350 HP, 25 AH, 4% MS. Gain bonus MS when dealing magic damage." },
-  "Stormsurge": { gold: 2800, desc: "90 AP, 15 MPen, 6% MS. Dealing 25% max HP triggers a lightning proc." },
-  "Banshee's Veil": { gold: 3000, desc: "105 AP, 40 MR. Grants a spell shield that blocks one enemy ability." },
-  "Lich Bane": { gold: 2900, desc: "100 AP, 4% MS, 10 AH. After casting, next attack deals bonus magic damage." },
-  "Shadowflame": { gold: 3200, desc: "110 AP, 15 MPen. Magic damage critically strikes enemies below 35% HP." },
-  "Seraph's Embrace": { gold: 2900, desc: "70 AP, 1000 Mana, 25 AH. Gain AP from bonus Mana. Shield when low." },
-  "Zhonya's Hourglass": { gold: 3250, desc: "105 AP, 50 Armor. Activate to enter invincible Stasis for 2.5s." },
-  "Liandry's Torment": { gold: 3000, desc: "60 AP, 300 HP. Abilities burn for 2% max HP magic damage per second." },
-  "Rylai's Crystal Scepter": { gold: 2600, desc: "65 AP, 400 HP. Damaging abilities slow enemies by 30% for 1s." },
-  "Morellonomicon": { gold: 2850, desc: "75 AP, 350 HP, 15 AH. Magic damage applies 40% Grievous Wounds." },
-  "Riftmaker": { gold: 3100, desc: "70 AP, 350 HP, 15 AH. Ramp up to convert excess damage to true damage." },
-  "Nashor's Tooth": { gold: 2900, desc: "80 AP, 50% AS, 15 AH. Attacks deal bonus magic damage on-hit." },
-  "Rabadon's Deathcap": { gold: 3500, desc: "130 AP. Increases total AP by 30%." },
-  "Cryptbloom": { gold: 3000, desc: "75 AP, 30% MPen, 20 AH. Takedowns heal nearby allies." },
-  "Oblivion Orb": { gold: 800, desc: "25 AP. Magic damage applies 40% Grievous Wounds for 3s." },
-  "Dark Seal": { gold: 350, desc: "15 AP, 50 HP. Gain Glory on takedowns (up to 10), +4 AP per stack." },
+const D: Record<string, ItemDetail> = {
+  "Kaenic Rookern": { gold: 2900, stats: ["400 Health", "80 Magic Resist", "100% Base Health Regen"], passive: "Magebane — After not taking magic damage for 15 seconds, gain a magic damage shield." },
+  "Warmog's Armor": { gold: 3100, stats: ["1000 Health", "100% Base Health Regen"], passive: "Warmog's Heart — With 2000+ bonus Health and out of combat, rapidly regenerate max Health." },
+  "Jak'Sho, The Protean": { gold: 2800, stats: ["400 Health", "30 Armor", "30 Magic Resist"], passive: "Voidborn Resilience — In combat, gain stacking Armor and MR. At max stacks, drain nearby enemies." },
+  "Hollow Radiance": { gold: 2800, stats: ["400 Health", "40 Magic Resist", "10 Ability Haste", "100% Base Health Regen"], passive: "Immolate — Deal magic damage per second to nearby enemies. Immobilize enemies to gain a shield." },
+  "Unending Despair": { gold: 2800, stats: ["400 Health", "25 Armor", "25 Magic Resist", "10 Ability Haste"], passive: "Anguish — Every 4 seconds in combat with champions, drain nearby enemies for Health." },
+  "Heartsteel": { gold: 3000, stats: ["900 Health", "100% Base Health Regen"], passive: "Colossal Consumption — Charge up a powerful attack against a champion. Deals bonus damage and grants permanent max Health.", note: "Core stacking item for Tank Cho'Gath. Pairs well with Feast stacks." },
+  "Fimbulwinter": { gold: 2400, stats: ["550 Health", "860 Mana", "15 Ability Haste"], passive: "Everlasting — Immobilizing or Slowing (melee) a champion consumes Mana to grant a shield." },
+  "Force of Nature": { gold: 2800, stats: ["400 Health", "55 Magic Resist", "4% Move Speed"], passive: "Steadfast — After taking magic damage, gain stacking MR and MS. At max: +70 MR, +6% MS.", note: "Best anti-AP item. Shuts down mages completely." },
+  "Abyssal Mask": { gold: 2650, stats: ["350 Health", "45 Magic Resist", "15 Ability Haste"], passive: "Unmake — Nearby enemy champions take 12% more magic damage." },
+  "Dead Man's Plate": { gold: 2900, stats: ["350 Health", "55 Armor", "4% Move Speed"], passive: "Shipwrecker — While moving, build up to 20 bonus Move Speed. Next Attack discharges stacks as bonus damage.", note: "Great for gap-closing onto carries." },
+  "Spirit Visage": { gold: 2500, stats: ["400 Health", "50 Magic Resist", "10 Ability Haste", "100% Base Health Regen"], passive: "Boundless Vitality — Increases all Healing and Shielding effectiveness on you by 25%." },
+  "Sunfire Aegis": { gold: 2700, stats: ["350 Health", "50 Armor", "10 Ability Haste"], passive: "Immolate — Deal magic damage per second to nearby enemies. Immobilize to release a wave of flame." },
+  "Frozen Heart": { gold: 2500, stats: ["75 Armor", "400 Mana", "20 Ability Haste"], passive: "Winter's Caress — Reduce Attack Speed of nearby enemies by 20%.", note: "Great vs Irelia, Yasuo, Yone, and other AS champions." },
+  "Randuin's Omen": { gold: 2700, stats: ["350 Health", "75 Armor"], passive: "Resilience — Take 30% less damage from Critical Strikes.\nHumility — Activate to slow nearby enemies.", note: "Build if enemy has crit champions." },
+  "Thornmail": { gold: 2450, stats: ["150 Health", "75 Armor"], passive: "Thorns — When struck by an Attack, deal magic damage to the attacker and apply 40% Grievous Wounds." },
+  "Gargoyle Stoneplate": { gold: 3150, stats: ["60 Armor", "60 Magic Resist", "15 Ability Haste"], passive: "Fortify — Taking damage from a champion grants stacking Armor and MR.\nActivate for a large shield based on bonus Health." },
+  "Bramble Vest": { gold: 800, stats: ["30 Armor"], passive: "Thorns — When hit by an Attack, deal magic damage and apply 40% Grievous Wounds for 3s.", note: "Rush vs healing laners like Warwick, Aatrox." },
+  "Luden's Companion": { gold: 2750, stats: ["100 Ability Power", "600 Mana", "10 Ability Haste"], passive: "Fire — Damaging Abilities fire 6 shots dealing bonus magic damage, chaining to nearby enemies." },
+  "Shurelya's Battlesong": { gold: 2200, stats: ["50 Ability Power", "15 Ability Haste", "4% Move Speed", "125% Base Mana Regen"], passive: "Inspiring Speech — Activate to grant nearby allies bonus Move Speed.", note: "Core for Roam'Gath build." },
+  "Rod of Ages": { gold: 2600, stats: ["45 Ability Power", "350 Health", "400 Mana"], passive: "Timeless — Gains 10 Health, 20 Mana, and 3 AP every minute for 10 minutes. Level up to restore Health and Mana.", note: "Great scaling pick to match late-game champions." },
+  "Malignance": { gold: 2700, stats: ["90 Ability Power", "600 Mana", "15 Ability Haste"], passive: "Scorn — Gain 20 Ultimate Ability Haste.\nHatefog — Damaging a champion with your ult creates a damage zone." },
+  "Horizon Focus": { gold: 2900, stats: ["110 Ability Power", "25 Ability Haste"], passive: "Hypershot — Dealing ability damage at 600+ range or to immobilized enemies calls down lightning.", note: "Good for Haste and reveals targets hit by Q." },
+  "Boots of Swiftness": { gold: 1000, stats: ["+55 Move Speed"], passive: "Fleetfooted — Reduce slow effectiveness by 25%.", note: "Best boots for most matchups. Dodge skillshots and escape ganks." },
+  "Void Staff": { gold: 3000, stats: ["95 Ability Power", "40% Magic Penetration"], passive: "Pure magic penetration. No unique passive." },
+  "Cosmic Drive": { gold: 3000, stats: ["70 Ability Power", "350 Health", "25 Ability Haste", "4% Move Speed"], passive: "Spelldance — Dealing magic or true damage to champions grants bonus Move Speed." },
+  "Stormsurge": { gold: 2800, stats: ["90 Ability Power", "15 Magic Penetration", "6% Move Speed"], passive: "Stormraider — Dealing 25% of a champion's max Health triggers a lightning proc for bonus damage." },
+  "Banshee's Veil": { gold: 3000, stats: ["105 Ability Power", "40 Magic Resist"], passive: "Annul — Periodically grants a Spell Shield that blocks the next enemy Ability.", note: "Removes engage threat from Syndra, Ahri, etc." },
+  "Lich Bane": { gold: 2900, stats: ["100 Ability Power", "4% Move Speed", "10 Ability Haste"], passive: "Spellblade — After using an Ability, your next Attack deals bonus magic damage." },
+  "Shadowflame": { gold: 3200, stats: ["110 Ability Power", "15 Magic Penetration"], passive: "Cinderbloom — Magic and true damage Critically Strikes enemies below 35% Health." },
+  "Seraph's Embrace": { gold: 2900, stats: ["70 Ability Power", "1000 Mana", "25 Ability Haste"], passive: "Awe — Gain AP equal to 4% bonus Mana.\nLifeline — Shield when taking damage below 30% Health." },
+  "Zhonya's Hourglass": { gold: 3250, stats: ["105 Ability Power", "50 Armor"], passive: "Time Stop — Activate to enter Stasis for 2.5 seconds. Invincible but unable to act.", note: "Essential vs assassins. Denies ult-reliant champions." },
+  "Liandry's Torment": { gold: 3000, stats: ["60 Ability Power", "300 Health"], passive: "Torment — Damaging Abilities burn for 2% max Health magic damage per second for 3s.", note: "Strong vs durable/tank enemies." },
+  "Rylai's Crystal Scepter": { gold: 2600, stats: ["65 Ability Power", "400 Health"], passive: "Rimefrost — Damaging Abilities Slow enemies by 30% for 1 second." },
+  "Morellonomicon": { gold: 2850, stats: ["75 Ability Power", "350 Health", "15 Ability Haste"], passive: "Grievous Wounds — Dealing magic damage applies 40% Wounds to champions." },
+  "Riftmaker": { gold: 3100, stats: ["70 Ability Power", "350 Health", "15 Ability Haste"], passive: "Void Corruption — For each second in combat, deal increasing bonus damage. At max stacks, excess damage converts to true damage." },
+  "Nashor's Tooth": { gold: 2900, stats: ["80 Ability Power", "50% Attack Speed", "15 Ability Haste"], passive: "Icathian Bite — Attacks deal bonus magic damage On-Hit." },
+  "Rabadon's Deathcap": { gold: 3500, stats: ["130 Ability Power"], passive: "Magical Opus — Increases your total Ability Power by 30%." },
+  "Cryptbloom": { gold: 3000, stats: ["75 Ability Power", "30% Magic Pen", "20 Ability Haste"], passive: "Life from Death — When a champion you damaged recently dies, heal nearby allies." },
+  "Oblivion Orb": { gold: 800, stats: ["25 Ability Power"], passive: "Grievous Wounds — Magic damage applies 40% Wounds for 3s.", note: "Cheap early anti-heal component." },
+  "Dark Seal": { gold: 350, stats: ["15 Ability Power", "50 Health"], passive: "Glory — Takedowns grant stacks (up to 10). Gain 4 AP per stack. Lose 5 on death.", note: "Great snowball item for easy matchups." },
 };
 
-function item(imgIndex: number, name?: string): ItemEntry {
-  const info = name ? ITEM_INFO[name] : undefined;
-  const dataItem = name ? ITEMS.find(i => i.name === name) : undefined;
-  return { imgIndex, name, gold: info?.gold ?? dataItem?.gold, desc: info?.desc ?? dataItem?.desc, ddId: dataItem?.id };
+function it(imgIndex: number, name?: string): ItemEntry {
+  return { imgIndex, name, detail: name ? D[name] : undefined };
 }
 
 const tankTiers = [
-  { tier: "S", label: "S", items: [item(0, "Kaenic Rookern"), item(1, "Warmog's Armor"), item(2, "Jak'Sho"), item(3, "Hollow Radiance"), item(4, "Unending Despair")] },
-  { tier: "A", label: "A", items: [item(5, "Heartsteel"), item(6, "Fimbulwinter"), item(7, "Force of Nature")] },
-  { tier: "B", label: "B", items: [item(9, "Abyssal Mask"), item(10, "Dead Man's Plate"), item(11, "Sunfire Aegis"), item(12, "Bramble Vest")] },
-  { tier: "C", label: "C", items: [item(13, "Frozen Heart"), item(14, "Randuin's Omen"), item(15)] },
-  { tier: "D", label: "D", items: [item(16, "Thornmail"), item(17)] },
-  { tier: "SIT", label: "SIT", items: [item(19, "Gargoyle Stoneplate"), item(20)] },
+  { tier: "S", label: "S", items: [it(0, "Kaenic Rookern"), it(1, "Warmog's Armor"), it(2, "Jak'Sho, The Protean"), it(3, "Hollow Radiance"), it(4, "Unending Despair")] },
+  { tier: "A", label: "A", items: [it(5, "Heartsteel"), it(6, "Fimbulwinter"), it(7, "Force of Nature")] },
+  { tier: "B", label: "B", items: [it(9, "Abyssal Mask"), it(10, "Dead Man's Plate"), it(11, "Spirit Visage"), it(12, "Sunfire Aegis")] },
+  { tier: "C", label: "C", items: [it(13, "Frozen Heart"), it(14, "Randuin's Omen"), it(15, "Thornmail")] },
+  { tier: "D", label: "D", items: [it(16, "Bramble Vest"), it(17)] },
+  { tier: "SIT", label: "SIT", items: [it(19, "Gargoyle Stoneplate"), it(20)] },
 ];
 
 const apTiers = [
-  { tier: "S", label: "S", items: [item(21, "Luden's Companion"), item(22, "Shurelya's Battlesong"), item(23, "Rod of Ages"), item(24, "Malignance")] },
-  { tier: "A", label: "A", items: [item(25, "Horizon Focus"), item(26, "Boots of Swiftness"), item(27, "Void Staff"), item(28, "Cosmic Drive"), item(29, "Stormsurge"), item(30, "Banshee's Veil"), item(31, "Lich Bane")] },
-  { tier: "B", label: "B", items: [item(32, "Shadowflame"), item(33, "Seraph's Embrace"), item(34, "Zhonya's Hourglass"), item(35, "Liandry's Torment"), item(36, "Rylai's Crystal Scepter"), item(37)] },
-  { tier: "C", label: "C", items: [item(38, "Morellonomicon"), item(39, "Riftmaker"), item(40, "Nashor's Tooth"), item(41, "Rabadon's Deathcap")] },
-  { tier: "D", label: "D", items: [item(42, "Cryptbloom")] },
-  { tier: "SIT", label: "SIT", items: [item(44, "Oblivion Orb"), item(45, "Dark Seal")] },
+  { tier: "S", label: "S", items: [it(21, "Luden's Companion"), it(22, "Shurelya's Battlesong"), it(23, "Rod of Ages"), it(24, "Malignance")] },
+  { tier: "A", label: "A", items: [it(25, "Horizon Focus"), it(26, "Boots of Swiftness"), it(27, "Void Staff"), it(28, "Cosmic Drive"), it(29, "Stormsurge"), it(30, "Banshee's Veil"), it(31, "Lich Bane")] },
+  { tier: "B", label: "B", items: [it(32, "Shadowflame"), it(33, "Seraph's Embrace"), it(34, "Zhonya's Hourglass"), it(35, "Liandry's Torment"), it(36, "Rylai's Crystal Scepter"), it(37, "Morellonomicon")] },
+  { tier: "C", label: "C", items: [it(38, "Riftmaker"), it(39, "Nashor's Tooth"), it(40, "Rabadon's Deathcap"), it(41, "Cryptbloom")] },
+  { tier: "D", label: "D", items: [it(42)] },
+  { tier: "SIT", label: "SIT", items: [it(44, "Oblivion Orb"), it(45, "Dark Seal")] },
 ];
 
 function ItemIcon({ entry, onClick }: { entry: ItemEntry; onClick: () => void }) {
   return (
     <div className="group/item relative">
       <button onClick={onClick}>
-        <Image
-          src={`/images/tierlist/item_${entry.imgIndex}.jpg`}
-          alt={entry.name || ""}
-          width={72}
-          height={72}
-          className="h-[72px] w-[72px] rounded border border-card-border transition group-hover/item:border-amber-500/60 group-hover/item:scale-110"
-        />
+        <Image src={`/images/tierlist/item_${entry.imgIndex}.jpg`} alt={entry.name || ""} width={72} height={72}
+          className="h-[72px] w-[72px] rounded border border-card-border transition group-hover/item:border-amber-500/60 group-hover/item:scale-110" />
       </button>
       {entry.name && (
         <div className="pointer-events-none absolute top-full left-1/2 z-20 mt-2 -translate-x-1/2 rounded-lg border border-card-border bg-[#010409] px-3 py-2 shadow-xl w-48 opacity-0 group-hover/item:opacity-100 transition">
           <p className="text-xs font-bold text-white">{entry.name}</p>
-          {entry.gold != null && <p className="text-[10px] font-semibold text-amber-400">{entry.gold}g</p>}
+          {entry.detail && <p className="text-[10px] font-semibold text-amber-400">{entry.detail.gold}g</p>}
         </div>
       )}
     </div>
@@ -110,23 +104,17 @@ function ItemIcon({ entry, onClick }: { entry: ItemEntry; onClick: () => void })
 }
 
 function ItemModal({ entry, onClose }: { entry: ItemEntry; onClose: () => void }) {
+  const d = entry.detail;
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div className="rounded-2xl border border-card-border bg-card p-8 shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-start gap-5">
-          <Image
-            src={`/images/tierlist/item_${entry.imgIndex}.jpg`}
-            alt={entry.name || ""}
-            width={96}
-            height={96}
-            className="h-24 w-24 shrink-0 rounded-lg border border-card-border"
-          />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="rounded-2xl border border-card-border bg-card shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-start gap-5 p-6 pb-0">
+          <Image src={`/images/tierlist/item_${entry.imgIndex}.jpg`} alt={entry.name || ""} width={80} height={80}
+            className="h-20 w-20 shrink-0 rounded-lg border border-card-border" />
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white">{entry.name || "Unknown Item"}</h2>
-            {entry.gold != null && <p className="mt-1 text-base font-semibold text-amber-400">{entry.gold} gold</p>}
+            {d && <p className="mt-1 text-lg font-semibold text-amber-400">{d.gold} gold</p>}
           </div>
           <button onClick={onClose} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-foreground/40 hover:text-foreground hover:bg-card-border">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -134,20 +122,48 @@ function ItemModal({ entry, onClose }: { entry: ItemEntry; onClose: () => void }
             </svg>
           </button>
         </div>
-        {entry.desc && (
-          <p className="mt-4 text-sm leading-relaxed text-foreground/70">{entry.desc}</p>
+
+        {d && (
+          <div className="p-6 space-y-4">
+            {/* Stats */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/40 mb-2">Stats</h3>
+              <div className="flex flex-wrap gap-2">
+                {d.stats.map((s, i) => (
+                  <span key={i} className="rounded bg-card-border/50 px-2.5 py-1 text-sm font-medium text-foreground/80">{s}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Passive */}
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground/40 mb-2">Passive</h3>
+              {d.passive.split("\n").map((line, i) => (
+                <p key={i} className="text-sm leading-relaxed text-foreground/70 mb-1 last:mb-0">{line}</p>
+              ))}
+            </div>
+
+            {/* Cho'Gath Note */}
+            {d.note && (
+              <div className="rounded-lg bg-accent/10 border border-accent/20 px-4 py-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-accent-glow mb-1">Cho&apos;Gath Note</h3>
+                <p className="text-sm leading-relaxed text-foreground/70">{d.note}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!d && (
+          <div className="p-6">
+            <p className="text-sm text-foreground/40">Item details not yet available.</p>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function TierList({
-  title,
-  tiers,
-  icon,
-  onItemClick,
-}: {
+function TierList({ title, tiers, icon, onItemClick }: {
   title: string;
   tiers: { tier: string; label: string; items: ItemEntry[] }[];
   icon: string;
@@ -161,13 +177,8 @@ function TierList({
       </div>
       <div className="overflow-visible rounded-xl border border-card-border">
         {tiers.map((row) => (
-          <div
-            key={row.tier}
-            className="flex items-center border-b border-card-border last:border-b-0"
-          >
-            <div
-              className={`flex w-12 shrink-0 items-center justify-center self-stretch text-sm font-bold ${TIER_COLORS[row.tier]}`}
-            >
+          <div key={row.tier} className="flex items-center border-b border-card-border last:border-b-0">
+            <div className={`flex w-12 shrink-0 items-center justify-center self-stretch text-sm font-bold ${TIER_COLORS[row.tier]}`}>
               {row.label}
             </div>
             <div className="flex flex-wrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[80px]">
@@ -184,13 +195,11 @@ function TierList({
 
 export default function ItemsPage() {
   const [selected, setSelected] = useState<ItemEntry | null>(null);
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <h1 className="mb-1 text-3xl font-bold">Item Tier List</h1>
       <p className="mb-8 text-foreground/50">
-        Sakuritou&apos;s item rankings for Cho&apos;Gath. Click for details. Order within tiers
-        doesn&apos;t matter.
+        Sakuritou&apos;s item rankings for Cho&apos;Gath. Click for details. Order within tiers doesn&apos;t matter.
       </p>
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-6">
         <TierList title="Tank" tiers={tankTiers} icon="/images/tank-icon.png" onItemClick={setSelected} />
