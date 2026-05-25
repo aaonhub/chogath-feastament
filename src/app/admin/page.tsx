@@ -57,7 +57,7 @@ const COMMON_ORDERS = [
   "2 Points Q - 2 Points E-  Max W - Finish Q - R - E", "W - Q - R - E",
 ];
 
-const ITEM_NAMES = [
+const ITEM_NAMES_FALLBACK = [
   "Zhonya's Hourglass","Force of Nature","Blade of the Ruined King","Boots of Swiftness",
   "Mercury's Treads","Plated Steelcaps","Warmog's Armor","Heartsteel","Banshee's Veil",
   "Luden's Companion","Rod of Ages","Kaenic Rookern","Dead Man's Plate","Frozen Heart",
@@ -66,14 +66,32 @@ const ITEM_NAMES = [
   "Horizon Focus","Dark Seal","Lost Chapter","Oblivion Orb","Liandry's Torment",
   "Riftmaker","Jak'Sho","Cosmic Drive","Wit's End","Abyssal Mask","Cull",
   "Malignance","Moonstone Renewer","Trinity Force","Nashor's Tooth","Hollow Radiance",
-  "Unending Despair","Ionian Boots","Chain Vest","Rocketbelt",
-  "Spirit Visage","Iceborn Gauntlet","Thornmail","Gargoyle Stoneplate",
-  "Rabadon's Deathcap","Void Staff","Shadowflame","Stormsurge",
-  "Lich Bane","Seraph's Embrace","Cryptbloom","Morellonomicon",
-  "Knight's Vow","Locket of the Iron Solari","Redemption","Mikael's Blessing",
-  "Sterak's Gage","Titanic Hydra","Hullbreaker","Spectre's Cowl",
-  "Bami's Cinder","Catalyst of Aeons",
+  "Unending Despair","Ionian Boots","Chain Vest","Spirit Visage","Iceborn Gauntlet",
+  "Thornmail","Gargoyle Stoneplate","Rabadon's Deathcap","Void Staff","Shadowflame",
+  "Stormsurge","Lich Bane","Seraph's Embrace","Cryptbloom","Morellonomicon",
+  "Knight's Vow","Sterak's Gage","Titanic Hydra",
 ];
+
+function useItemNames(): string[] {
+  const [items, setItems] = useState<string[]>(ITEM_NAMES_FALLBACK);
+  useEffect(() => {
+    fetch("https://ddragon.leagueoflegends.com/cdn/15.10.1/data/en_US/item.json")
+      .then((r) => r.json())
+      .then((d) => {
+        const seen = new Set<string>();
+        const names: string[] = [];
+        for (const item of Object.values(d.data as Record<string, { name: string; gold?: { purchasable?: boolean }; maps?: Record<string, boolean> }>)) {
+          if (seen.has(item.name)) continue;
+          if (item.gold?.purchasable === false) continue;
+          seen.add(item.name);
+          names.push(item.name);
+        }
+        if (names.length > 0) setItems(names.sort());
+      })
+      .catch(() => {});
+  }, []);
+  return items;
+}
 
 const ALL_CHAMPIONS = [
   "Aatrox","Ahri","Akali","Akshan","Alistar","Ambessa","Amumu","Anivia","Annie","Aphelios",
@@ -233,14 +251,14 @@ function ChampionSearch({ value, onChange, exclude }: { value: string; onChange:
   );
 }
 
-function ItemsField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function ItemsField({ value, onChange, itemNames }: { value: string; onChange: (v: string) => void; itemNames: string[] }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     if (ref.current) { ref.current.style.height = "auto"; ref.current.style.height = Math.max(ref.current.scrollHeight, 72) + "px"; }
   }, [value]);
-  const filtered = query.length > 0 ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : [];
+  const filtered = query.length > 0 ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : [];
   function itemId(name: string): number | null {
     const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
     return match?.id ?? null;
@@ -290,11 +308,12 @@ function itemIdLookup(name: string): number | null {
   return match?.id ?? null;
 }
 
-function SortableTierItem({ item, id, onChange, onRemove }: {
+function SortableTierItem({ item, id, onChange, onRemove, itemNames }: {
   item: { imgIndex: number; name: string };
   id: string;
   onChange: (name: string) => void;
   onRemove: () => void;
+  itemNames: string[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, zIndex: isDragging ? 50 : undefined };
@@ -302,8 +321,8 @@ function SortableTierItem({ item, id, onChange, onRemove }: {
   const [open, setOpen] = useState(false);
   useEffect(() => { setQuery(item.name); }, [item.name]);
   const filtered = query
-    ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
-    : ITEM_NAMES.slice(0, 8);
+    ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    : itemNames.slice(0, 8);
 
   return (
     <div ref={setNodeRef} style={style} className="flex flex-col items-center gap-1 w-[90px]">
@@ -339,11 +358,11 @@ function SortableTierItem({ item, id, onChange, onRemove }: {
   );
 }
 
-function AddItemModal({ onAdd, onClose }: { onAdd: (name: string) => void; onClose: () => void }) {
+function AddItemModal({ onAdd, onClose, itemNames }: { onAdd: (name: string) => void; onClose: () => void; itemNames: string[] }) {
   const [query, setQuery] = useState("");
   const filtered = query
-    ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase()))
-    : ITEM_NAMES;
+    ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase()))
+    : itemNames;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -413,8 +432,8 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 
 // ── Edit Modal ──
 
-function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
-  matchup: Matchup; onSave: (m: Matchup) => void; onClose: () => void; isNew?: boolean; excludeChampions?: string[];
+function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemNames }: {
+  matchup: Matchup; onSave: (m: Matchup) => void; onClose: () => void; isNew?: boolean; excludeChampions?: string[]; itemNames: string[];
 }) {
   const [m, setM] = useState<Matchup>({ ...matchup });
   const [modalDirty, setModalDirty] = useState(false);
@@ -493,7 +512,7 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
               </div>
               <div>
                 <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Items</label>
-                <ItemsField value={m.itemsAP} onChange={(v) => update("itemsAP", v)} />
+                <ItemsField value={m.itemsAP} onChange={(v) => update("itemsAP", v)} itemNames={itemNames} />
               </div>
             </div>
 
@@ -518,7 +537,7 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
               </div>
               <div>
                 <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Items</label>
-                <ItemsField value={m.itemsTank} onChange={(v) => update("itemsTank", v)} />
+                <ItemsField value={m.itemsTank} onChange={(v) => update("itemsTank", v)} itemNames={itemNames} />
               </div>
             </div>
           </div>
@@ -532,10 +551,11 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
 
 // ── Items Tier Admin ──
 
-function ItemsTierAdmin({ data, setData, setDirty }: {
+function ItemsTierAdmin({ data, setData, setDirty, itemNames }: {
   data: MatchupData | null;
   setData: (d: MatchupData) => void;
   setDirty: (d: boolean) => void;
+  itemNames: string[];
 }) {
   const [addingTo, setAddingTo] = useState<{ key: "tankItems" | "apItems"; tierIndex: number } | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -604,6 +624,7 @@ function ItemsTierAdmin({ data, setData, setDirty }: {
                                   newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
                                   setData({ ...data, [key]: newTiers }); setDirty(true);
                                 }}
+                                itemNames={itemNames}
                               />
                             ))}
                           </div>
@@ -628,6 +649,7 @@ function ItemsTierAdmin({ data, setData, setDirty }: {
             setData({ ...data, [key]: newTiers }); setDirty(true);
           }}
           onClose={() => setAddingTo(null)}
+          itemNames={itemNames}
         />
       )}
     </>
@@ -647,6 +669,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ lane: "mid" | "top"; index: number } | null>(null);
   const [adding, setAdding] = useState(false);
+  const itemNames = useItemNames();
 
   const loadData = useCallback(async () => {
     setLoading(true); setError("");
@@ -832,7 +855,7 @@ export default function AdminPage() {
               ))}
             </div>
           ) : activeTab === "items" ? (
-            <ItemsTierAdmin data={data} setData={setData} setDirty={setDirty} />
+            <ItemsTierAdmin data={data} setData={setData} setDirty={setDirty} itemNames={itemNames} />
           ) : (
           <div className="space-y-1">
             {filtered.length === 0 ? (
@@ -870,6 +893,7 @@ export default function AdminPage() {
             setData({ ...data, [editing.lane]: newList }); setDirty(true); setEditing(null);
           }}
           onClose={() => setEditing(null)}
+          itemNames={itemNames}
         />
       )}
 
@@ -878,6 +902,7 @@ export default function AdminPage() {
           matchup={emptyMatchup()}
           isNew
           excludeChampions={data ? data[activeTab as "mid" | "top"].map((m) => m.champion) : []}
+          itemNames={itemNames}
           onSave={(newM) => {
             if (!data) return;
             const lane = activeTab as "mid" | "top";
