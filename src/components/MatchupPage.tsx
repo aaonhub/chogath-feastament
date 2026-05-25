@@ -349,18 +349,21 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
               {m.difficultyTank && (
                 <span className="text-sm">Tank: <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyTank]}`}>{normDiff(m.difficultyTank)}</span></span>
               )}
-              {m.startItems && m.startItems.length > 0 && (
-                <div className="ml-2 flex items-center gap-1">
-                  <span className="text-xs text-foreground/40">Start:</span>
-                  {m.startItems.map((sid) => {
-                    const si = START_ITEM_MAP[sid];
-                    return si ? (
-                      <Image key={sid} src={`${DDRAGON_ITEM_IMG}/${si.id}.png`} alt={si.name} width={24} height={24} className="h-6 w-6 rounded border border-card-border" title={si.name} />
-                    ) : null;
-                  })}
-                </div>
-              )}
             </div>
+            {m.startItems && m.startItems.length > 0 && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-foreground/40">Start</span>
+                {m.startItems.map((sid) => {
+                  const si = START_ITEM_MAP[sid];
+                  return si ? (
+                    <div key={sid} className="group/si relative">
+                      <Image src={`${DDRAGON_ITEM_IMG}/${si.id}.png`} alt={si.name} width={40} height={40} className="h-10 w-10 rounded-lg border border-card-border" />
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-black/90 px-2 py-1 text-xs text-white opacity-0 transition group-hover/si:opacity-100">{si.name}</div>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            )}
           </div>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 transition hover:bg-card-border hover:text-foreground">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
