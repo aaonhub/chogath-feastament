@@ -266,10 +266,9 @@ function ItemsField({ value, onChange, itemNames, itemIdMap }: { value: string; 
     if (ref.current) { ref.current.style.height = "auto"; ref.current.style.height = Math.max(ref.current.scrollHeight, 72) + "px"; }
   }, [value]);
   const filtered = query.length > 0 ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : [];
-  function itemId(name: string): number | null {
-    if (itemIdMap?.[name]) return itemIdMap[name];
-    const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
-    return match?.id ?? null;
+  function itemImgUrl(name: string): string | null {
+    const id = itemIdMap?.[name] ?? ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()))?.id;
+    return id ? `${DDRAGON_ITEM}/${id}.png` : null;
   }
   function insertItem(itemName: string) {
     const separator = value.trim() ? ", " : "";
@@ -290,11 +289,11 @@ function ItemsField({ value, onChange, itemNames, itemIdMap }: { value: string; 
         {showSuggestions && filtered.length > 0 && (
           <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-card-border bg-card py-1 shadow-xl">
             {filtered.map((name) => {
-              const id = itemId(name);
+              const url = itemImgUrl(name);
               return (
                 <button key={name} type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => insertItem(name)}
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm text-foreground/70 transition hover:bg-accent/20 hover:text-foreground">
-                  {id && <Image src={getItemImageUrl(id)} alt="" width={24} height={24} className="h-6 w-6 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {url && <Image src={url} alt="" width={24} height={24} className="h-6 w-6 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                   {name}
                 </button>
               );
