@@ -11,7 +11,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Akali",
@@ -24,7 +27,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Akshan",
@@ -37,7 +43,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-shield",
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Anivia",
@@ -50,7 +60,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Annie",
@@ -63,7 +76,10 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Aurelion Sol",
