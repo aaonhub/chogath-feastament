@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { data, sha, message } = body as {
-      data: { mid: unknown[]; top: unknown[]; changelog?: unknown[] };
+      data: { mid: unknown[]; top: unknown[]; changelog?: unknown[]; tankItems?: unknown[]; apItems?: unknown[] };
       sha: string;
       message?: string;
     };

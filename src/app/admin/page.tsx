@@ -22,7 +22,10 @@ interface Matchup {
 
 interface ChangelogEntry { date: string; items: string[]; }
 
-interface MatchupData { mid: Matchup[]; top: Matchup[]; changelog: ChangelogEntry[]; }
+interface TierItem { imgIndex: number; name: string; }
+interface ItemTier { tier: string; items: TierItem[]; }
+
+interface MatchupData { mid: Matchup[]; top: Matchup[]; changelog: ChangelogEntry[]; tankItems: ItemTier[]; apItems: ItemTier[]; }
 
 const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard", "Super Hard"];
 const DIFF_COLORS: Record<Difficulty, string> = {
@@ -428,7 +431,7 @@ export default function AdminPage() {
   const [data, setData] = useState<MatchupData | null>(null);
   const [sha, setSha] = useState("");
   const [dirty, setDirty] = useState(false);
-  const [activeTab, setActiveTab] = useState<"mid" | "top" | "changelog">("mid");
+  const [activeTab, setActiveTab] = useState<"mid" | "top" | "changelog" | "items">("mid");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ lane: "mid" | "top"; index: number } | null>(null);
   const [adding, setAdding] = useState(false);
@@ -445,7 +448,7 @@ export default function AdminPage() {
         difficultyAP: (m.difficultyAP === ("Super-Hard" as string) ? "Super Hard" : m.difficultyAP) as Difficulty,
         difficultyTank: (m.difficultyTank === ("Super-Hard" as string) ? "Super Hard" : m.difficultyTank) as Difficulty,
       }));
-      setData({ mid: norm(json.data.mid), top: norm(json.data.top), changelog: json.data.changelog || [] });
+      setData({ mid: norm(json.data.mid), top: norm(json.data.top), changelog: json.data.changelog || [], tankItems: json.data.tankItems || [], apItems: json.data.apItems || [] });
       setSha(json.sha); setAuthed(true); setDirty(false);
     } catch { setError("Network error"); } finally { setLoading(false); }
   }, []);
@@ -474,7 +477,7 @@ export default function AdminPage() {
 
   if (!authed && !loading) return <LoginForm onLogin={() => { setAuthed(true); loadData(); }} />;
 
-  const matchups: Matchup[] = data && activeTab !== "changelog" ? data[activeTab as "mid" | "top"] : [];
+  const matchups: Matchup[] = data && activeTab !== "changelog" && activeTab !== "items" ? data[activeTab as "mid" | "top"] : [];
   const filtered = search ? matchups.filter((m) => m.champion.toLowerCase().includes(search.toLowerCase())) : matchups;
 
   return (
@@ -507,7 +510,11 @@ export default function AdminPage() {
               className={`rounded-lg px-4 py-2 text-sm font-bold transition ${activeTab === "changelog" ? "bg-accent text-white" : "bg-card text-foreground/50 hover:text-foreground"}`}>
               Changelog ({data?.changelog.length || 0})
             </button>
-            {activeTab !== "changelog" && (
+            <button onClick={() => setActiveTab("items")}
+              className={`rounded-lg px-4 py-2 text-sm font-bold transition ${activeTab === "items" ? "bg-accent text-white" : "bg-card text-foreground/50 hover:text-foreground"}`}>
+              Items
+            </button>
+            {activeTab !== "changelog" && activeTab !== "items" && (
               <>
                 <div className="relative ml-auto">
                   <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search champion..."
@@ -612,6 +619,82 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          ) : activeTab === "items" ? (
+            <div className="flex flex-col gap-8 lg:flex-row lg:gap-6">
+              {(["tankItems", "apItems"] as const).map((key) => {
+                const label = key === "tankItems" ? "Tank" : "AP";
+                const tiers: ItemTier[] = data?.[key] || [];
+                return (
+                  <div key={key} className="flex-1 min-w-0">
+                    <h2 className="mb-4 text-lg font-bold text-foreground">{label} Items</h2>
+                    <div className="space-y-4">
+                      {tiers.map((tierRow, tierIndex) => (
+                        <div key={tierRow.tier} className="rounded-xl border border-card-border bg-card p-3">
+                          <div className="mb-2 flex items-center gap-2">
+                            <span className="rounded bg-card-border px-2 py-0.5 text-xs font-bold text-foreground">{tierRow.tier}</span>
+                            <button
+                              onClick={() => {
+                                if (!data) return;
+                                const imgIndexStr = prompt("Image index for new item:");
+                                if (imgIndexStr === null) return;
+                                const imgIndex = parseInt(imgIndexStr, 10);
+                                if (isNaN(imgIndex)) return;
+                                const newTiers = [...data[key]];
+                                const newItems = [...newTiers[tierIndex].items, { imgIndex, name: "" }];
+                                newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                setData({ ...data, [key]: newTiers }); setDirty(true);
+                              }}
+                              className="ml-auto rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent-glow transition hover:bg-accent/20">
+                              + Add Item
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            {tierRow.items.map((item, itemIndex) => (
+                              <div key={itemIndex} className="flex flex-col items-center gap-1 w-[72px]">
+                                <Image
+                                  src={`/images/tierlist/item_${item.imgIndex}.jpg`}
+                                  alt={item.name || ""}
+                                  width={72}
+                                  height={72}
+                                  className="h-[72px] w-[72px] rounded border border-card-border"
+                                />
+                                <input
+                                  type="text"
+                                  value={item.name}
+                                  onChange={(e) => {
+                                    if (!data) return;
+                                    const newTiers = [...data[key]];
+                                    const newItems = [...newTiers[tierIndex].items];
+                                    newItems[itemIndex] = { ...newItems[itemIndex], name: e.target.value };
+                                    newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                    setData({ ...data, [key]: newTiers }); setDirty(true);
+                                  }}
+                                  placeholder={`#${item.imgIndex}`}
+                                  className="w-full rounded border border-card-border bg-background px-1 py-0.5 text-center text-[10px] text-foreground focus:border-accent focus:outline-none"
+                                />
+                                <button
+                                  onClick={() => {
+                                    if (!data) return;
+                                    if (!confirm(`Remove item #${item.imgIndex} (${item.name || "unnamed"})?`)) return;
+                                    const newTiers = [...data[key]];
+                                    const newItems = [...newTiers[tierIndex].items];
+                                    newItems.splice(itemIndex, 1);
+                                    newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                    setData({ ...data, [key]: newTiers }); setDirty(true);
+                                  }}
+                                  className="rounded px-1.5 py-0.5 text-[10px] text-hard transition hover:bg-hard/20">
+                                  Remove
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
           <div className="space-y-1">
             {filtered.length === 0 ? (
@@ -652,7 +735,7 @@ export default function AdminPage() {
         />
       )}
 
-      {adding && activeTab !== "changelog" && (
+      {adding && activeTab !== "changelog" && activeTab !== "items" && (
         <EditModal
           matchup={emptyMatchup()}
           isNew

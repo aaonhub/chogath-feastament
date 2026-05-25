@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import matchupData from "../../../data/matchups.json";
 
 const TIER_COLORS: Record<string, string> = {
   S: "bg-[#e06666]", A: "bg-[#e69138]", B: "bg-[#f1c232]",
@@ -64,27 +65,17 @@ const D: Record<string, ItemDetail> = {
   "Dark Seal": { gold: 350, stats: ["15 Ability Power", "50 Health"], passive: "Glory — Takedowns grant stacks (up to 10). Gain 4 AP per stack. Lose 5 on death.", note: "Great snowball item for easy matchups." },
 };
 
-function it(imgIndex: number, name?: string): ItemEntry {
-  return { imgIndex, name, detail: name ? D[name] : undefined };
+function toEntry(raw: { imgIndex: number; name: string }): ItemEntry {
+  const name = raw.name || undefined;
+  return { imgIndex: raw.imgIndex, name, detail: name ? D[name] : undefined };
 }
 
-const tankTiers = [
-  { tier: "S", label: "S", items: [it(0, "Kaenic Rookern"), it(1, "Warmog's Armor"), it(2, "Jak'Sho, The Protean"), it(3, "Hollow Radiance"), it(4, "Unending Despair")] },
-  { tier: "A", label: "A", items: [it(5, "Heartsteel"), it(6, "Fimbulwinter"), it(7, "Force of Nature")] },
-  { tier: "B", label: "B", items: [it(9, "Abyssal Mask"), it(10, "Dead Man's Plate"), it(11, "Spirit Visage"), it(12, "Sunfire Aegis")] },
-  { tier: "C", label: "C", items: [it(13, "Frozen Heart"), it(14, "Randuin's Omen"), it(15, "Thornmail")] },
-  { tier: "D", label: "D", items: [it(16, "Bramble Vest"), it(17)] },
-  { tier: "SIT", label: "SIT", items: [it(19, "Gargoyle Stoneplate"), it(20)] },
-];
+function toTierRows(tiers: Array<{ tier: string; items: Array<{ imgIndex: number; name: string }> }>) {
+  return tiers.map((row) => ({ tier: row.tier, label: row.tier, items: row.items.map(toEntry) }));
+}
 
-const apTiers = [
-  { tier: "S", label: "S", items: [it(21, "Luden's Companion"), it(22, "Shurelya's Battlesong"), it(23, "Rod of Ages"), it(24, "Malignance")] },
-  { tier: "A", label: "A", items: [it(25, "Horizon Focus"), it(26, "Boots of Swiftness"), it(27, "Void Staff"), it(28, "Cosmic Drive"), it(29, "Stormsurge"), it(30, "Banshee's Veil"), it(31, "Lich Bane")] },
-  { tier: "B", label: "B", items: [it(32, "Shadowflame"), it(33, "Seraph's Embrace"), it(34, "Zhonya's Hourglass"), it(35, "Liandry's Torment"), it(36, "Rylai's Crystal Scepter"), it(37, "Morellonomicon")] },
-  { tier: "C", label: "C", items: [it(38, "Riftmaker"), it(39, "Nashor's Tooth"), it(40, "Rabadon's Deathcap"), it(41, "Cryptbloom")] },
-  { tier: "D", label: "D", items: [it(42)] },
-  { tier: "SIT", label: "SIT", items: [it(44, "Oblivion Orb"), it(45, "Dark Seal")] },
-];
+const tankTiers = toTierRows(matchupData.tankItems);
+const apTiers = toTierRows(matchupData.apItems);
 
 function ItemIcon({ entry, onClick }: { entry: ItemEntry; onClick: () => void }) {
   return (
@@ -196,7 +187,7 @@ function TierList({ title, tiers, icon, onItemClick }: {
 export default function ItemsPage() {
   const [selected, setSelected] = useState<ItemEntry | null>(null);
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto px-4 py-8" style={{ maxWidth: "1600px" }}>
       <h1 className="mb-1 text-3xl font-bold">Item Tier List</h1>
       <p className="mb-8 text-foreground/50">
         Sakuritou&apos;s item rankings for Cho&apos;Gath. Click for details. Order within tiers doesn&apos;t matter.
