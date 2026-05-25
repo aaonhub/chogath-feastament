@@ -274,6 +274,64 @@ function ItemsField({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
+// ── Tier Item Editor ──
+
+function TierItemEditor({ item, onChange, onRemove }: {
+  item: { imgIndex: number; name: string };
+  onChange: (name: string) => void;
+  onRemove: () => void;
+}) {
+  const [query, setQuery] = useState(item.name);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { setQuery(item.name); }, [item.name]);
+  const filtered = query
+    ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    : ITEM_NAMES.slice(0, 8);
+
+  function itemId(name: string): number | null {
+    const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
+    return match?.id ?? null;
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-1 w-[90px]">
+      <Image
+        src={`/images/tierlist/item_${item.imgIndex}.jpg`}
+        alt={item.name || ""}
+        width={64} height={64}
+        className="h-16 w-16 rounded border border-card-border"
+      />
+      <div className="relative w-full">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 200)}
+          placeholder={`#${item.imgIndex}`}
+          className="w-full rounded border border-card-border bg-background px-1 py-0.5 text-center text-[10px] text-foreground focus:border-accent focus:outline-none"
+        />
+        {open && filtered.length > 0 && (
+          <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-lg border border-card-border bg-card py-1 shadow-xl">
+            {filtered.map((name) => {
+              const id = itemId(name);
+              return (
+                <button key={name} type="button" onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { onChange(name); setQuery(name); setOpen(false); }}
+                  className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition hover:bg-accent/20 ${name === item.name ? "text-accent-glow font-semibold" : "text-foreground/70"}`}>
+                  {id && <Image src={getItemImageUrl(id)} alt="" width={20} height={20} className="h-5 w-5 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <button onClick={onRemove} className="rounded px-1.5 py-0.5 text-[10px] text-hard transition hover:bg-hard/20">Remove</button>
+    </div>
+  );
+}
+
 // ── Login ──
 
 function LoginForm({ onLogin }: { onLogin: () => void }) {
@@ -620,13 +678,17 @@ export default function AdminPage() {
               ))}
             </div>
           ) : activeTab === "items" ? (
-            <div className="flex flex-col gap-8 lg:flex-row lg:gap-6">
+            <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
               {(["tankItems", "apItems"] as const).map((key) => {
                 const label = key === "tankItems" ? "Tank" : "AP";
+                const icon = key === "tankItems" ? "/images/tank-icon.png" : "/images/mage-icon.webp";
                 const tiers: ItemTier[] = data?.[key] || [];
                 return (
                   <div key={key} className="flex-1 min-w-0">
-                    <h2 className="mb-4 text-lg font-bold text-foreground">{label} Items</h2>
+                    <div className="mb-4 flex items-center gap-2">
+                      <Image src={icon} alt="" width={24} height={24} className="h-6 w-6" />
+                      <h2 className="text-lg font-bold text-foreground">{label} Items</h2>
+                    </div>
                     <div className="space-y-4">
                       {tiers.map((tierRow, tierIndex) => (
                         <div key={tierRow.tier} className="rounded-xl border border-card-border bg-card p-3">
@@ -650,42 +712,27 @@ export default function AdminPage() {
                           </div>
                           <div className="flex flex-wrap gap-3">
                             {tierRow.items.map((item, itemIndex) => (
-                              <div key={itemIndex} className="flex flex-col items-center gap-1 w-[72px]">
-                                <Image
-                                  src={`/images/tierlist/item_${item.imgIndex}.jpg`}
-                                  alt={item.name || ""}
-                                  width={72}
-                                  height={72}
-                                  className="h-[72px] w-[72px] rounded border border-card-border"
-                                />
-                                <input
-                                  type="text"
-                                  value={item.name}
-                                  onChange={(e) => {
-                                    if (!data) return;
-                                    const newTiers = [...data[key]];
-                                    const newItems = [...newTiers[tierIndex].items];
-                                    newItems[itemIndex] = { ...newItems[itemIndex], name: e.target.value };
-                                    newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
-                                    setData({ ...data, [key]: newTiers }); setDirty(true);
-                                  }}
-                                  placeholder={`#${item.imgIndex}`}
-                                  className="w-full rounded border border-card-border bg-background px-1 py-0.5 text-center text-[10px] text-foreground focus:border-accent focus:outline-none"
-                                />
-                                <button
-                                  onClick={() => {
-                                    if (!data) return;
-                                    if (!confirm(`Remove item #${item.imgIndex} (${item.name || "unnamed"})?`)) return;
-                                    const newTiers = [...data[key]];
-                                    const newItems = [...newTiers[tierIndex].items];
-                                    newItems.splice(itemIndex, 1);
-                                    newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
-                                    setData({ ...data, [key]: newTiers }); setDirty(true);
-                                  }}
-                                  className="rounded px-1.5 py-0.5 text-[10px] text-hard transition hover:bg-hard/20">
-                                  Remove
-                                </button>
-                              </div>
+                              <TierItemEditor
+                                key={itemIndex}
+                                item={item}
+                                onChange={(name) => {
+                                  if (!data) return;
+                                  const newTiers = [...data[key]];
+                                  const newItems = [...newTiers[tierIndex].items];
+                                  newItems[itemIndex] = { ...newItems[itemIndex], name };
+                                  newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                  setData({ ...data, [key]: newTiers }); setDirty(true);
+                                }}
+                                onRemove={() => {
+                                  if (!data) return;
+                                  if (!confirm(`Remove item #${item.imgIndex} (${item.name || "unnamed"})?`)) return;
+                                  const newTiers = [...data[key]];
+                                  const newItems = [...newTiers[tierIndex].items];
+                                  newItems.splice(itemIndex, 1);
+                                  newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                  setData({ ...data, [key]: newTiers }); setDirty(true);
+                                }}
+                              />
                             ))}
                           </div>
                         </div>
