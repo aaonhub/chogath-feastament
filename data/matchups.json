@@ -1597,11 +1597,11 @@
       "items": [
         {
           "imgIndex": 5,
-          "name": "Heartsteel"
+          "name": "Thornmail"
         },
         {
           "imgIndex": 6,
-          "name": "Fimbulwinter"
+          "name": "Frozen Heart"
         },
         {
           "imgIndex": 7,
@@ -1635,7 +1635,7 @@
       "items": [
         {
           "imgIndex": 13,
-          "name": "Frozen Heart"
+          "name": "Iceborn Gauntlet"
         },
         {
           "imgIndex": 14,
@@ -1734,7 +1734,7 @@
       "items": [
         {
           "imgIndex": 32,
-          "name": "Shadowflame"
+          "name": "Lich Bane"
         },
         {
           "imgIndex": 33,
@@ -1746,15 +1746,15 @@
         },
         {
           "imgIndex": 35,
-          "name": "Liandry's Torment"
+          "name": "Malignance"
         },
         {
           "imgIndex": 36,
-          "name": "Rylai's Crystal Scepter"
+          "name": "Cryptbloom"
         },
         {
           "imgIndex": 37,
-          "name": "Morellonomicon"
+          "name": "Horizon Focus"
         }
       ]
     },
