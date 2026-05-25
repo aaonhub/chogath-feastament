@@ -72,26 +72,33 @@ const ITEM_NAMES_FALLBACK = [
   "Knight's Vow","Sterak's Gage","Titanic Hydra",
 ];
 
-function useItemNames(): string[] {
-  const [items, setItems] = useState<string[]>(ITEM_NAMES_FALLBACK);
+interface ItemNameEntry { name: string; id: number; }
+
+function useItemData(): { names: string[]; idMap: Record<string, number> } {
+  const [entries, setEntries] = useState<ItemNameEntry[]>([]);
   useEffect(() => {
     fetch("https://ddragon.leagueoflegends.com/cdn/15.10.1/data/en_US/item.json")
       .then((r) => r.json())
       .then((d) => {
         const seen = new Set<string>();
-        const names: string[] = [];
-        for (const item of Object.values(d.data as Record<string, { name: string; gold?: { purchasable?: boolean }; maps?: Record<string, boolean> }>)) {
+        const items: ItemNameEntry[] = [];
+        for (const [id, item] of Object.entries(d.data as Record<string, { name: string; gold?: { purchasable?: boolean } }>)) {
           if (seen.has(item.name)) continue;
           if (item.gold?.purchasable === false) continue;
           seen.add(item.name);
-          names.push(item.name);
+          items.push({ name: item.name, id: parseInt(id) });
         }
-        if (names.length > 0) setItems(names.sort());
+        if (items.length > 0) setEntries(items.sort((a, b) => a.name.localeCompare(b.name)));
       })
       .catch(() => {});
   }, []);
-  return items;
+  const names = entries.length > 0 ? entries.map((e) => e.name) : ITEM_NAMES_FALLBACK;
+  const idMap: Record<string, number> = {};
+  for (const e of entries) idMap[e.name] = e.id;
+  return { names, idMap };
 }
+
+const DDRAGON_ITEM = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item";
 
 const ALL_CHAMPIONS = [
   "Aatrox","Ahri","Akali","Akshan","Alistar","Ambessa","Amumu","Anivia","Annie","Aphelios",
@@ -251,7 +258,7 @@ function ChampionSearch({ value, onChange, exclude }: { value: string; onChange:
   );
 }
 
-function ItemsField({ value, onChange, itemNames }: { value: string; onChange: (v: string) => void; itemNames: string[] }) {
+function ItemsField({ value, onChange, itemNames, itemIdMap }: { value: string; onChange: (v: string) => void; itemNames: string[]; itemIdMap?: Record<string, number> }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -260,6 +267,7 @@ function ItemsField({ value, onChange, itemNames }: { value: string; onChange: (
   }, [value]);
   const filtered = query.length > 0 ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : [];
   function itemId(name: string): number | null {
+    if (itemIdMap?.[name]) return itemIdMap[name];
     const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
     return match?.id ?? null;
   }
@@ -308,12 +316,13 @@ function itemIdLookup(name: string): number | null {
   return match?.id ?? null;
 }
 
-function SortableTierItem({ item, id, onChange, onRemove, itemNames }: {
+function SortableTierItem({ item, id, onChange, onRemove, itemNames, itemIdMap }: {
   item: { imgIndex: number; name: string };
   id: string;
   onChange: (name: string) => void;
   onRemove: () => void;
   itemNames: string[];
+  itemIdMap?: Record<string, number>;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, zIndex: isDragging ? 50 : undefined };
@@ -340,12 +349,12 @@ function SortableTierItem({ item, id, onChange, onRemove, itemNames }: {
         {open && filtered.length > 0 && (
           <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-lg border border-card-border bg-card py-1 shadow-xl">
             {filtered.map((name) => {
-              const ddId = itemIdLookup(name);
+              const ddId = itemIdMap?.[name] ?? itemIdLookup(name);
               return (
                 <button key={name} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { onChange(name); setQuery(name); setOpen(false); }}
                   className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition hover:bg-accent/20 ${name === item.name ? "text-accent-glow font-semibold" : "text-foreground/70"}`}>
-                  {ddId && <Image src={getItemImageUrl(ddId)} alt="" width={20} height={20} className="h-5 w-5 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {ddId && <Image src={`${DDRAGON_ITEM}/${ddId}.png`} alt="" width={20} height={20} className="h-5 w-5 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                   {name}
                 </button>
               );
@@ -358,7 +367,7 @@ function SortableTierItem({ item, id, onChange, onRemove, itemNames }: {
   );
 }
 
-function AddItemModal({ onAdd, onClose, itemNames }: { onAdd: (name: string) => void; onClose: () => void; itemNames: string[] }) {
+function AddItemModal({ onAdd, onClose, itemNames, itemIdMap }: { onAdd: (name: string) => void; onClose: () => void; itemNames: string[]; itemIdMap?: Record<string, number> }) {
   const [query, setQuery] = useState("");
   const filtered = query
     ? itemNames.filter((n) => n.toLowerCase().includes(query.toLowerCase()))
@@ -384,11 +393,11 @@ function AddItemModal({ onAdd, onClose, itemNames }: { onAdd: (name: string) => 
             className="mb-3 w-full rounded-lg border border-card-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none" />
           <div className="max-h-64 overflow-y-auto space-y-0.5">
             {filtered.map((name) => {
-              const ddId = itemIdLookup(name);
+              const ddId = itemIdMap?.[name] ?? itemIdLookup(name);
               return (
                 <button key={name} type="button" onClick={() => { onAdd(name); onClose(); }}
                   className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-foreground/70 transition hover:bg-accent/20 hover:text-foreground">
-                  {ddId && <Image src={getItemImageUrl(ddId)} alt="" width={28} height={28} className="h-7 w-7 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {ddId && <Image src={`${DDRAGON_ITEM}/${ddId}.png`} alt="" width={28} height={28} className="h-7 w-7 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                   {name}
                 </button>
               );
@@ -432,8 +441,8 @@ function LoginForm({ onLogin }: { onLogin: () => void }) {
 
 // ── Edit Modal ──
 
-function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemNames }: {
-  matchup: Matchup; onSave: (m: Matchup) => void; onClose: () => void; isNew?: boolean; excludeChampions?: string[]; itemNames: string[];
+function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemNames, itemIdMap }: {
+  matchup: Matchup; onSave: (m: Matchup) => void; onClose: () => void; isNew?: boolean; excludeChampions?: string[]; itemNames: string[]; itemIdMap?: Record<string, number>;
 }) {
   const [m, setM] = useState<Matchup>({ ...matchup });
   const [modalDirty, setModalDirty] = useState(false);
@@ -512,7 +521,7 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemName
               </div>
               <div>
                 <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Items</label>
-                <ItemsField value={m.itemsAP} onChange={(v) => update("itemsAP", v)} itemNames={itemNames} />
+                <ItemsField value={m.itemsAP} onChange={(v) => update("itemsAP", v)} itemNames={itemNames} itemIdMap={itemIdMap} />
               </div>
             </div>
 
@@ -537,7 +546,7 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemName
               </div>
               <div>
                 <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-foreground/50">Items</label>
-                <ItemsField value={m.itemsTank} onChange={(v) => update("itemsTank", v)} itemNames={itemNames} />
+                <ItemsField value={m.itemsTank} onChange={(v) => update("itemsTank", v)} itemNames={itemNames} itemIdMap={itemIdMap} />
               </div>
             </div>
           </div>
@@ -551,11 +560,12 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemName
 
 // ── Items Tier Admin ──
 
-function ItemsTierAdmin({ data, setData, setDirty, itemNames }: {
+function ItemsTierAdmin({ data, setData, setDirty, itemNames, itemIdMap }: {
   data: MatchupData | null;
   setData: (d: MatchupData) => void;
   setDirty: (d: boolean) => void;
   itemNames: string[];
+  itemIdMap?: Record<string, number>;
 }) {
   const [addingTo, setAddingTo] = useState<{ key: "tankItems" | "apItems"; tierIndex: number } | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
@@ -625,6 +635,7 @@ function ItemsTierAdmin({ data, setData, setDirty, itemNames }: {
                                   setData({ ...data, [key]: newTiers }); setDirty(true);
                                 }}
                                 itemNames={itemNames}
+                                itemIdMap={itemIdMap}
                               />
                             ))}
                           </div>
@@ -650,6 +661,7 @@ function ItemsTierAdmin({ data, setData, setDirty, itemNames }: {
           }}
           onClose={() => setAddingTo(null)}
           itemNames={itemNames}
+          itemIdMap={itemIdMap}
         />
       )}
     </>
@@ -669,7 +681,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ lane: "mid" | "top"; index: number } | null>(null);
   const [adding, setAdding] = useState(false);
-  const itemNames = useItemNames();
+  const { names: itemNames, idMap: itemIdMap } = useItemData();
 
   const loadData = useCallback(async () => {
     setLoading(true); setError("");
@@ -855,7 +867,7 @@ export default function AdminPage() {
               ))}
             </div>
           ) : activeTab === "items" ? (
-            <ItemsTierAdmin data={data} setData={setData} setDirty={setDirty} itemNames={itemNames} />
+            <ItemsTierAdmin data={data} setData={setData} setDirty={setDirty} itemNames={itemNames} itemIdMap={itemIdMap} />
           ) : (
           <div className="space-y-1">
             {filtered.length === 0 ? (
@@ -894,6 +906,7 @@ export default function AdminPage() {
           }}
           onClose={() => setEditing(null)}
           itemNames={itemNames}
+          itemIdMap={itemIdMap}
         />
       )}
 
@@ -903,6 +916,7 @@ export default function AdminPage() {
           isNew
           excludeChampions={data ? data[activeTab as "mid" | "top"].map((m) => m.champion) : []}
           itemNames={itemNames}
+          itemIdMap={itemIdMap}
           onSave={(newM) => {
             if (!data) return;
             const lane = activeTab as "mid" | "top";
