@@ -1436,7 +1436,9 @@
   "changelog": [
     {
       "date": "23.05.2025",
-      "items": ["Some general edits + working on ADC"]
+      "items": [
+        "Some general edits + working on ADC"
+      ]
     },
     {
       "date": "14.05.2025",
@@ -1472,7 +1474,9 @@
     },
     {
       "date": "01.03.2025",
-      "items": ["Added more advices"]
+      "items": [
+        "Added more advices"
+      ]
     },
     {
       "date": "22.02.2025",
@@ -1483,7 +1487,9 @@
     },
     {
       "date": "17.02.2025",
-      "items": ["Added some extra advices for some matchups"]
+      "items": [
+        "Added some extra advices for some matchups"
+      ]
     },
     {
       "date": "09.02.2025",
@@ -1499,11 +1505,15 @@
     },
     {
       "date": "02.02.2025",
-      "items": ["Typos"]
+      "items": [
+        "Typos"
+      ]
     },
     {
       "date": "01.02.2025",
-      "items": ["Added text on the difficulty indicators"]
+      "items": [
+        "Added text on the difficulty indicators"
+      ]
     },
     {
       "date": "31.01.2025",
@@ -1521,23 +1531,33 @@
     },
     {
       "date": "03.09.2025",
-      "items": ["Matchups changed in difficulty due to new changes"]
+      "items": [
+        "Matchups changed in difficulty due to new changes"
+      ]
     },
     {
       "date": "13.08.2025",
-      "items": ["Will be adding Viego (mid/top) soon"]
+      "items": [
+        "Will be adding Viego (mid/top) soon"
+      ]
     },
     {
       "date": "01.08.2025",
-      "items": ["Still working on ADC Page"]
+      "items": [
+        "Still working on ADC Page"
+      ]
     },
     {
       "date": "07.07.2025",
-      "items": ["Updated Tank Items on stream again, as meta changed"]
+      "items": [
+        "Updated Tank Items on stream again, as meta changed"
+      ]
     },
     {
       "date": "13.06.2025",
-      "items": ["Updated the item tierlist (tank items)"]
+      "items": [
+        "Updated the item tierlist (tank items)"
+      ]
     },
     {
       "date": "10.06.2025",
@@ -1547,74 +1567,239 @@
     }
   ],
   "tankItems": [
-    { "tier": "S", "items": [
-      { "imgIndex": 0, "name": "Kaenic Rookern" },
-      { "imgIndex": 1, "name": "Warmog's Armor" },
-      { "imgIndex": 2, "name": "Jak'Sho, The Protean" },
-      { "imgIndex": 3, "name": "Hollow Radiance" },
-      { "imgIndex": 4, "name": "Unending Despair" }
-    ]},
-    { "tier": "A", "items": [
-      { "imgIndex": 5, "name": "Heartsteel" },
-      { "imgIndex": 6, "name": "Fimbulwinter" },
-      { "imgIndex": 7, "name": "Force of Nature" }
-    ]},
-    { "tier": "B", "items": [
-      { "imgIndex": 9, "name": "Abyssal Mask" },
-      { "imgIndex": 10, "name": "Dead Man's Plate" },
-      { "imgIndex": 11, "name": "Spirit Visage" },
-      { "imgIndex": 12, "name": "Sunfire Aegis" }
-    ]},
-    { "tier": "C", "items": [
-      { "imgIndex": 13, "name": "Frozen Heart" },
-      { "imgIndex": 14, "name": "Randuin's Omen" },
-      { "imgIndex": 15, "name": "Thornmail" }
-    ]},
-    { "tier": "D", "items": [
-      { "imgIndex": 16, "name": "Bramble Vest" },
-      { "imgIndex": 17, "name": "" }
-    ]},
-    { "tier": "SIT", "items": [
-      { "imgIndex": 19, "name": "Gargoyle Stoneplate" },
-      { "imgIndex": 20, "name": "" }
-    ]}
+    {
+      "tier": "S",
+      "items": [
+        {
+          "imgIndex": 0,
+          "name": "Kaenic Rookern"
+        },
+        {
+          "imgIndex": 1,
+          "name": "Dead Man's Plate"
+        },
+        {
+          "imgIndex": 2,
+          "name": "Jak'Sho, The Protean"
+        },
+        {
+          "imgIndex": 3,
+          "name": "Hollow Radiance"
+        },
+        {
+          "imgIndex": 4,
+          "name": "Unending Despair"
+        }
+      ]
+    },
+    {
+      "tier": "A",
+      "items": [
+        {
+          "imgIndex": 5,
+          "name": "Heartsteel"
+        },
+        {
+          "imgIndex": 6,
+          "name": "Fimbulwinter"
+        },
+        {
+          "imgIndex": 7,
+          "name": "Force of Nature"
+        }
+      ]
+    },
+    {
+      "tier": "B",
+      "items": [
+        {
+          "imgIndex": 9,
+          "name": "Abyssal Mask"
+        },
+        {
+          "imgIndex": 10,
+          "name": "Dead Man's Plate"
+        },
+        {
+          "imgIndex": 11,
+          "name": "Spirit Visage"
+        },
+        {
+          "imgIndex": 12,
+          "name": "Sunfire Aegis"
+        }
+      ]
+    },
+    {
+      "tier": "C",
+      "items": [
+        {
+          "imgIndex": 13,
+          "name": "Frozen Heart"
+        },
+        {
+          "imgIndex": 14,
+          "name": "Randuin's Omen"
+        },
+        {
+          "imgIndex": 15,
+          "name": "Thornmail"
+        }
+      ]
+    },
+    {
+      "tier": "D",
+      "items": [
+        {
+          "imgIndex": 16,
+          "name": "Bramble Vest"
+        },
+        {
+          "imgIndex": 17,
+          "name": ""
+        }
+      ]
+    },
+    {
+      "tier": "SIT",
+      "items": [
+        {
+          "imgIndex": 19,
+          "name": "Gargoyle Stoneplate"
+        },
+        {
+          "imgIndex": 20,
+          "name": ""
+        }
+      ]
+    }
   ],
   "apItems": [
-    { "tier": "S", "items": [
-      { "imgIndex": 21, "name": "Luden's Companion" },
-      { "imgIndex": 22, "name": "Shurelya's Battlesong" },
-      { "imgIndex": 23, "name": "Rod of Ages" },
-      { "imgIndex": 24, "name": "Malignance" }
-    ]},
-    { "tier": "A", "items": [
-      { "imgIndex": 25, "name": "Horizon Focus" },
-      { "imgIndex": 26, "name": "Boots of Swiftness" },
-      { "imgIndex": 27, "name": "Void Staff" },
-      { "imgIndex": 28, "name": "Cosmic Drive" },
-      { "imgIndex": 29, "name": "Stormsurge" },
-      { "imgIndex": 30, "name": "Banshee's Veil" },
-      { "imgIndex": 31, "name": "Lich Bane" }
-    ]},
-    { "tier": "B", "items": [
-      { "imgIndex": 32, "name": "Shadowflame" },
-      { "imgIndex": 33, "name": "Seraph's Embrace" },
-      { "imgIndex": 34, "name": "Zhonya's Hourglass" },
-      { "imgIndex": 35, "name": "Liandry's Torment" },
-      { "imgIndex": 36, "name": "Rylai's Crystal Scepter" },
-      { "imgIndex": 37, "name": "Morellonomicon" }
-    ]},
-    { "tier": "C", "items": [
-      { "imgIndex": 38, "name": "Riftmaker" },
-      { "imgIndex": 39, "name": "Nashor's Tooth" },
-      { "imgIndex": 40, "name": "Rabadon's Deathcap" },
-      { "imgIndex": 41, "name": "Cryptbloom" }
-    ]},
-    { "tier": "D", "items": [
-      { "imgIndex": 42, "name": "" }
-    ]},
-    { "tier": "SIT", "items": [
-      { "imgIndex": 44, "name": "Oblivion Orb" },
-      { "imgIndex": 45, "name": "Dark Seal" }
-    ]}
+    {
+      "tier": "S",
+      "items": [
+        {
+          "imgIndex": 21,
+          "name": "Luden's Companion"
+        },
+        {
+          "imgIndex": 22,
+          "name": "Shurelya's Battlesong"
+        },
+        {
+          "imgIndex": 23,
+          "name": "Rod of Ages"
+        },
+        {
+          "imgIndex": 24,
+          "name": "Malignance"
+        }
+      ]
+    },
+    {
+      "tier": "A",
+      "items": [
+        {
+          "imgIndex": 25,
+          "name": "Horizon Focus"
+        },
+        {
+          "imgIndex": 26,
+          "name": "Boots of Swiftness"
+        },
+        {
+          "imgIndex": 27,
+          "name": "Void Staff"
+        },
+        {
+          "imgIndex": 28,
+          "name": "Cosmic Drive"
+        },
+        {
+          "imgIndex": 29,
+          "name": "Stormsurge"
+        },
+        {
+          "imgIndex": 30,
+          "name": "Banshee's Veil"
+        },
+        {
+          "imgIndex": 31,
+          "name": "Lich Bane"
+        }
+      ]
+    },
+    {
+      "tier": "B",
+      "items": [
+        {
+          "imgIndex": 32,
+          "name": "Shadowflame"
+        },
+        {
+          "imgIndex": 33,
+          "name": "Seraph's Embrace"
+        },
+        {
+          "imgIndex": 34,
+          "name": "Zhonya's Hourglass"
+        },
+        {
+          "imgIndex": 35,
+          "name": "Liandry's Torment"
+        },
+        {
+          "imgIndex": 36,
+          "name": "Rylai's Crystal Scepter"
+        },
+        {
+          "imgIndex": 37,
+          "name": "Morellonomicon"
+        }
+      ]
+    },
+    {
+      "tier": "C",
+      "items": [
+        {
+          "imgIndex": 38,
+          "name": "Riftmaker"
+        },
+        {
+          "imgIndex": 39,
+          "name": "Nashor's Tooth"
+        },
+        {
+          "imgIndex": 40,
+          "name": "Rabadon's Deathcap"
+        },
+        {
+          "imgIndex": 41,
+          "name": "Cryptbloom"
+        }
+      ]
+    },
+    {
+      "tier": "D",
+      "items": [
+        {
+          "imgIndex": 42,
+          "name": ""
+        }
+      ]
+    },
+    {
+      "tier": "SIT",
+      "items": [
+        {
+          "imgIndex": 44,
+          "name": "Oblivion Orb"
+        },
+        {
+          "imgIndex": 45,
+          "name": "Dark Seal"
+        }
+      ]
+    }
   ]
 }
