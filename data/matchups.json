@@ -1622,7 +1622,7 @@
         },
         {
           "imgIndex": 11,
-          "name": "Spirit Visage"
+          "name": "Abyssal Mask"
         },
         {
           "imgIndex": 12,
@@ -1639,7 +1639,7 @@
         },
         {
           "imgIndex": 14,
-          "name": "Randuin's Omen"
+          "name": "Sunfire Aegis"
         },
         {
           "imgIndex": 15,
@@ -1656,7 +1656,7 @@
         },
         {
           "imgIndex": 17,
-          "name": ""
+          "name": "Heartsteel"
         }
       ]
     },
@@ -1665,11 +1665,11 @@
       "items": [
         {
           "imgIndex": 19,
-          "name": "Gargoyle Stoneplate"
+          "name": "Zeke's Convergence"
         },
         {
           "imgIndex": 20,
-          "name": ""
+          "name": "Knight's Vow"
         }
       ]
     }
