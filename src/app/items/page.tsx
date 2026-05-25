@@ -1,8 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import matchupData from "../../../data/matchups.json";
+import { ITEMS as LOCAL_ITEMS } from "@/data/items";
+
+const DDRAGON_ITEM = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item";
+
+function useItemIdMap(): Record<string, number> {
+  const [idMap, setIdMap] = useState<Record<string, number>>({});
+  useEffect(() => {
+    fetch("https://ddragon.leagueoflegends.com/cdn/15.10.1/data/en_US/item.json")
+      .then((r) => r.json())
+      .then((d) => {
+        const map: Record<string, number> = {};
+        for (const [id, item] of Object.entries(d.data as Record<string, { name: string }>)) {
+          map[item.name] = parseInt(id);
+        }
+        setIdMap(map);
+      })
+      .catch(() => {});
+  }, []);
+  return idMap;
+}
+
+function getItemImgSrc(name: string | undefined, imgIndex: number, idMap: Record<string, number>): string {
+  if (name) {
+    const ddId = idMap[name] ?? LOCAL_ITEMS.find((i) => i.name === name)?.id;
+    if (ddId) return `${DDRAGON_ITEM}/${ddId}.png`;
+  }
+  return `/images/tierlist/item_${imgIndex}.jpg`;
+}
 
 const TIER_COLORS: Record<string, string> = {
   S: "bg-[#e06666]", A: "bg-[#e69138]", B: "bg-[#f1c232]",
@@ -77,11 +105,12 @@ function toTierRows(tiers: Array<{ tier: string; items: Array<{ imgIndex: number
 const tankTiers = toTierRows(matchupData.tankItems);
 const apTiers = toTierRows(matchupData.apItems);
 
-function ItemIcon({ entry, onClick }: { entry: ItemEntry; onClick: () => void }) {
+function ItemIcon({ entry, onClick, idMap }: { entry: ItemEntry; onClick: () => void; idMap: Record<string, number> }) {
+  const src = getItemImgSrc(entry.name, entry.imgIndex, idMap);
   return (
     <div className="group/item relative">
       <button onClick={onClick}>
-        <Image src={`/images/tierlist/item_${entry.imgIndex}.jpg`} alt={entry.name || ""} width={72} height={72}
+        <Image src={src} alt={entry.name || ""} width={72} height={72}
           className="h-[72px] w-[72px] rounded border border-card-border transition group-hover/item:border-amber-500/60 group-hover/item:scale-110" />
       </button>
       {entry.name && (
@@ -94,14 +123,15 @@ function ItemIcon({ entry, onClick }: { entry: ItemEntry; onClick: () => void })
   );
 }
 
-function ItemModal({ entry, onClose }: { entry: ItemEntry; onClose: () => void }) {
+function ItemModal({ entry, onClose, idMap }: { entry: ItemEntry; onClose: () => void; idMap: Record<string, number> }) {
   const d = entry.detail;
+  const src = getItemImgSrc(entry.name, entry.imgIndex, idMap);
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="rounded-2xl border border-card-border bg-card shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-start gap-5 p-6 pb-0">
-          <Image src={`/images/tierlist/item_${entry.imgIndex}.jpg`} alt={entry.name || ""} width={80} height={80}
+          <Image src={src} alt={entry.name || ""} width={80} height={80}
             className="h-20 w-20 shrink-0 rounded-lg border border-card-border" />
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white">{entry.name || "Unknown Item"}</h2>
@@ -154,11 +184,12 @@ function ItemModal({ entry, onClose }: { entry: ItemEntry; onClose: () => void }
   );
 }
 
-function TierList({ title, tiers, icon, onItemClick }: {
+function TierList({ title, tiers, icon, onItemClick, idMap }: {
   title: string;
   tiers: { tier: string; label: string; items: ItemEntry[] }[];
   icon: string;
   onItemClick: (entry: ItemEntry) => void;
+  idMap: Record<string, number>;
 }) {
   return (
     <div className="flex-1 min-w-0">
@@ -174,7 +205,7 @@ function TierList({ title, tiers, icon, onItemClick }: {
             </div>
             <div className="flex flex-wrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[80px]">
               {row.items.map((entry) => (
-                <ItemIcon key={entry.imgIndex} entry={entry} onClick={() => onItemClick(entry)} />
+                <ItemIcon key={entry.imgIndex} entry={entry} onClick={() => onItemClick(entry)} idMap={idMap} />
               ))}
             </div>
           </div>
@@ -186,6 +217,7 @@ function TierList({ title, tiers, icon, onItemClick }: {
 
 export default function ItemsPage() {
   const [selected, setSelected] = useState<ItemEntry | null>(null);
+  const idMap = useItemIdMap();
   return (
     <div className="mx-auto px-4 py-8" style={{ maxWidth: "1600px" }}>
       <h1 className="mb-1 text-3xl font-bold">Item Tier List</h1>
@@ -193,10 +225,10 @@ export default function ItemsPage() {
         Sakuritou&apos;s item rankings for Cho&apos;Gath. Click for details. Order within tiers doesn&apos;t matter.
       </p>
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-6">
-        <TierList title="Tank" tiers={tankTiers} icon="/images/tank-icon.png" onItemClick={setSelected} />
-        <TierList title="AP" tiers={apTiers} icon="/images/mage-icon.webp" onItemClick={setSelected} />
+        <TierList title="Tank" tiers={tankTiers} icon="/images/tank-icon.png" onItemClick={setSelected} idMap={idMap} />
+        <TierList title="AP" tiers={apTiers} icon="/images/mage-icon.webp" onItemClick={setSelected} idMap={idMap} />
       </div>
-      {selected && <ItemModal entry={selected} onClose={() => setSelected(null)} />}
+      {selected && <ItemModal entry={selected} onClose={() => setSelected(null)} idMap={idMap} />}
     </div>
   );
 }
