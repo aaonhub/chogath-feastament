@@ -61,7 +61,7 @@ function TierList({
             >
               {row.label}
             </div>
-            <div className="flex flex-wrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[60px]">
+            <div className="flex flex-wrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[80px]">
               {row.items.map((i) => (
                 <Image
                   key={i}
@@ -69,7 +69,7 @@ function TierList({
                   alt=""
                   width={48}
                   height={48}
-                  className="h-14 w-14 rounded border border-card-border"
+                  className="h-[72px] w-[72px] rounded border border-card-border"
                 />
               ))}
             </div>

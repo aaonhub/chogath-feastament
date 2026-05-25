@@ -37,7 +37,7 @@ export default function SkinsPage() {
             >
               {row.tier}
             </div>
-            <div className="flex flex-nowrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[100px]">
+            <div className="flex flex-nowrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[140px]">
               {row.skins.length === 0 ? (
                 <span className="text-sm text-foreground/30 self-center">—</span>
               ) : (
@@ -48,7 +48,7 @@ export default function SkinsPage() {
                     alt=""
                     width={320}
                     height={189}
-                    className="h-[90px] w-auto rounded border border-card-border object-cover"
+                    className="h-[130px] w-auto rounded border border-card-border object-cover"
                   />
                 ))
               )}
