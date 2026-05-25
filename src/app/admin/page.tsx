@@ -574,18 +574,19 @@ export default function AdminPage() {
                     {entry.items.map((item, itemIndex) => (
                       <div key={itemIndex} className="flex items-start gap-2">
                         <span className="mt-2 text-xs text-foreground/30">{itemIndex + 1}.</span>
-                        <textarea value={item}
-                          onChange={(e) => {
-                            if (!data) return;
-                            const newChangelog = [...data.changelog];
-                            const newItems = [...newChangelog[entryIndex].items];
-                            newItems[itemIndex] = e.target.value;
-                            newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
-                            setData({ ...data, changelog: newChangelog }); setDirty(true);
-                          }}
-                          className="flex-1 resize-none rounded-lg border border-card-border bg-background px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
-                          placeholder="Changelog item..."
-                          rows={1} />
+                        <div className="flex-1">
+                          <AutoTextarea value={item}
+                            onChange={(v) => {
+                              if (!data) return;
+                              const newChangelog = [...data.changelog];
+                              const newItems = [...newChangelog[entryIndex].items];
+                              newItems[itemIndex] = v;
+                              newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
+                              setData({ ...data, changelog: newChangelog }); setDirty(true);
+                            }}
+                            placeholder="Changelog item..."
+                            minRows={1} />
+                        </div>
                         <button onClick={() => {
                           if (!data) return;
                           const newChangelog = [...data.changelog];

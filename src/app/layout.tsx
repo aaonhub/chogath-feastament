@@ -37,6 +37,8 @@ function Nav() {
         <Image src="/images/top-lane.png" alt="Top lane" width={18} height={18} className="h-[18px] w-[18px]" />
       ),
     },
+    { href: "/items", label: "Items", icon: null },
+    { href: "/skins", label: "Skins", icon: null },
     { href: "/changelog", label: "Changelog", icon: null },
   ];
 
