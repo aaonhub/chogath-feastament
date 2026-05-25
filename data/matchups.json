@@ -92,7 +92,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Aurora",
@@ -105,7 +109,11 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Super Hard",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Azir",
@@ -118,7 +126,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Cassiopeia",
@@ -131,7 +143,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-shield",
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Corki",
@@ -144,7 +160,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Diana",
@@ -157,7 +177,10 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Ekko",
@@ -170,7 +193,10 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Fizz",
@@ -183,7 +209,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Galio",
@@ -196,7 +225,10 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Medium",
       "abilityOrderAP": "2 Points Q - 2 Points E-  Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Gragas",
@@ -209,7 +241,10 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Heimerdinger",
@@ -222,7 +257,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Hwei",
@@ -235,7 +274,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Super Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Irelia",
@@ -248,7 +291,10 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Jayce",
@@ -261,7 +307,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Karma",
@@ -274,7 +324,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Kassadin",
@@ -287,7 +341,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "2 Points Q - 2 Points E-  Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "cull"
+      ]
     },
     {
       "champion": "Katarina",
@@ -300,7 +358,10 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "2 Points Q - 2 Points E-  Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Kayle",
@@ -313,7 +374,11 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "cull"
+      ]
     },
     {
       "champion": "Kennen",
@@ -326,7 +391,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "LeBlanc",
@@ -339,7 +408,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Lissandra",
@@ -352,7 +425,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Lux",
@@ -365,7 +442,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Malphite",
@@ -378,7 +459,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "cull"
+      ]
     },
     {
       "champion": "Malzahar",
@@ -391,7 +476,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Mel",
@@ -404,7 +493,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Naafiri",
@@ -417,7 +510,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Neeko",
@@ -430,7 +527,11 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Orianna",
@@ -443,7 +544,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Qiyana",
@@ -456,7 +561,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Rumble",
@@ -469,7 +577,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Ryze",
@@ -482,7 +594,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Swain",
@@ -495,7 +611,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Sylas",
@@ -508,7 +628,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Syndra",
@@ -521,7 +644,11 @@
       "difficultyAP": "Super Hard",
       "difficultyTank": "Super Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-shield",
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Taliyah",
@@ -534,7 +661,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Talon",
@@ -547,7 +678,10 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Twisted Fate",
@@ -560,7 +694,10 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Veigar",
@@ -573,7 +710,10 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Vel'Koz",
@@ -586,7 +726,11 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Super Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Vex",
@@ -599,7 +743,10 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Easy",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Viktor",
@@ -612,7 +759,11 @@
       "difficultyAP": "Super Hard",
       "difficultyTank": "Super Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Vladimir",
@@ -625,7 +776,11 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Hard",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Xerath",
@@ -638,7 +793,11 @@
       "difficultyAP": "Easy",
       "difficultyTank": "Medium",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Yasuo",
@@ -651,7 +810,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Easy",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-shield",
+        "dorans-ring"
+      ]
     },
     {
       "champion": "Yone",
@@ -664,7 +827,11 @@
       "difficultyAP": "Medium",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Zed",
@@ -677,7 +844,11 @@
       "difficultyAP": "Hard",
       "difficultyTank": "Medium",
       "abilityOrderAP": "3 Points Q - Max W - Finish Q - R - E",
-      "abilityOrderTank": "E - W - R - Q"
+      "abilityOrderTank": "E - W - R - Q",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     },
     {
       "champion": "Zoe",
@@ -690,7 +861,11 @@
       "difficultyAP": "Super Hard",
       "difficultyTank": "Super Hard",
       "abilityOrderAP": "Q - W - R - E",
-      "abilityOrderTank": "Q - W - R - E"
+      "abilityOrderTank": "Q - W - R - E",
+      "startItems": [
+        "dorans-ring",
+        "dorans-shield"
+      ]
     }
   ],
   "top": [
