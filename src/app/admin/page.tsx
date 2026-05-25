@@ -67,6 +67,12 @@ const ITEM_NAMES = [
   "Riftmaker","Jak'Sho","Cosmic Drive","Wit's End","Abyssal Mask","Cull",
   "Malignance","Moonstone Renewer","Trinity Force","Nashor's Tooth","Hollow Radiance",
   "Unending Despair","Ionian Boots","Chain Vest","Rocketbelt",
+  "Spirit Visage","Iceborn Gauntlet","Thornmail","Gargoyle Stoneplate",
+  "Rabadon's Deathcap","Void Staff","Shadowflame","Stormsurge",
+  "Lich Bane","Seraph's Embrace","Cryptbloom","Morellonomicon",
+  "Knight's Vow","Locket of the Iron Solari","Redemption","Mikael's Blessing",
+  "Sterak's Gage","Titanic Hydra","Hullbreaker","Spectre's Cowl",
+  "Bami's Cinder","Catalyst of Aeons",
 ];
 
 const ALL_CHAMPIONS = [
