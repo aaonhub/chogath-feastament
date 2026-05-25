@@ -12,6 +12,7 @@ export interface Matchup {
   difficultyTank: Difficulty;
   abilityOrderAP: string;
   abilityOrderTank: string;
+  startItems?: string[];
 }
 
 export const midMatchups: Matchup[] = [

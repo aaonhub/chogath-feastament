@@ -8,6 +8,13 @@ import { extractItems, getItemImageUrl, type ItemInfo } from "@/data/items";
 const DDRAGON = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/champion";
 const DDRAGON_SPELL = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/spell";
 
+const DDRAGON_ITEM_IMG = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item";
+const START_ITEM_MAP: Record<string, { name: string; id: number }> = {
+  "dorans-ring": { name: "Doran's Ring", id: 1056 },
+  "dorans-shield": { name: "Doran's Shield", id: 1054 },
+  "cull": { name: "Cull", id: 1083 },
+};
+
 const CHO_ABILITIES: Record<string, { name: string; img: string }> = {
   Q: { name: "Rupture", img: `${DDRAGON_SPELL}/Rupture.png` },
   W: { name: "Feral Scream", img: `${DDRAGON_SPELL}/FeralScream.png` },
@@ -335,12 +342,23 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
           <ChampionImage champKey={m.championKey} name={m.champion} size={64} />
           <div className="flex-1">
             <h2 className="text-2xl font-bold">{m.champion}</h2>
-            <div className="mt-1 flex gap-3">
+            <div className="mt-1 flex items-center gap-3">
               {m.difficultyAP && (
                 <span className="text-sm">AP: <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyAP]}`}>{normDiff(m.difficultyAP)}</span></span>
               )}
               {m.difficultyTank && (
                 <span className="text-sm">Tank: <span className={`font-bold ${DIFF_TEXT_COLORS[m.difficultyTank]}`}>{normDiff(m.difficultyTank)}</span></span>
+              )}
+              {m.startItems && m.startItems.length > 0 && (
+                <div className="ml-2 flex items-center gap-1">
+                  <span className="text-xs text-foreground/40">Start:</span>
+                  {m.startItems.map((sid) => {
+                    const si = START_ITEM_MAP[sid];
+                    return si ? (
+                      <Image key={sid} src={`${DDRAGON_ITEM_IMG}/${si.id}.png`} alt={si.name} width={24} height={24} className="h-6 w-6 rounded border border-card-border" title={si.name} />
+                    ) : null;
+                  })}
+                </div>
               )}
             </div>
           </div>

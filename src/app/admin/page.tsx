@@ -21,6 +21,7 @@ interface Matchup {
   difficultyTank: Difficulty;
   abilityOrderAP: string;
   abilityOrderTank: string;
+  startItems?: string[];
 }
 
 interface ChangelogEntry { date: string; items: string[]; }
@@ -34,6 +35,12 @@ const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard", "Super Hard"];
 const DIFF_COLORS: Record<Difficulty, string> = {
   Easy: "bg-easy", Medium: "bg-medium", Hard: "bg-hard", "Super Hard": "bg-super-hard",
 };
+
+const START_ITEMS = [
+  { id: "dorans-ring", name: "Doran's Ring", img: "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item/1056.png" },
+  { id: "dorans-shield", name: "Doran's Shield", img: "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item/1054.png" },
+  { id: "cull", name: "Cull", img: "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/item/1083.png" },
+];
 
 const DDRAGON = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/champion";
 const DDRAGON_SPELL = "https://ddragon.leagueoflegends.com/cdn/15.10.1/img/spell";
@@ -308,6 +315,28 @@ function ItemsField({ value, onChange, itemNames, itemIdMap }: { value: string; 
   );
 }
 
+// ── Start Item Selector ──
+
+function StartItemSelector({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  function toggle(id: string) {
+    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id]);
+  }
+  return (
+    <div className="flex gap-2">
+      {START_ITEMS.map((item) => {
+        const active = value.includes(item.id);
+        return (
+          <button key={item.id} type="button" onClick={() => toggle(item.id)}
+            className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition ${active ? "border-amber-500 bg-amber-500/20 text-amber-300" : "border-card-border bg-background text-foreground/40 hover:text-foreground/70 opacity-40"}`}>
+            <Image src={item.img} alt={item.name} width={24} height={24} className="h-6 w-6 rounded" />
+            {item.name}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Tier Item Editor (Sortable) ──
 
 function itemIdLookup(name: string): number | null {
@@ -497,6 +526,10 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemName
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Champion</label>
               <ChampionSearch value={m.champion} onChange={(name, key) => { setM((prev) => ({ ...prev, champion: name, championKey: key })); setModalDirty(true); }} exclude={excludeChampions} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Starting Items</label>
+              <StartItemSelector value={m.startItems || []} onChange={(v) => { setM((prev) => ({ ...prev, startItems: v })); setModalDirty(true); }} />
             </div>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Matchup Advice</label>
