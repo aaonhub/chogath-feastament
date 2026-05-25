@@ -495,12 +495,18 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions, itemName
   }
 
   useEffect(() => {
-    function onKey(e: KeyboardEvent) { if (e.key === "Escape") tryClose(); }
-    document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
-  }, [onClose, modalDirty]);
+    return () => { document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
+  }, []);
+
+  const tryCloseRef = useRef(tryClose);
+  tryCloseRef.current = tryClose;
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") tryCloseRef.current(); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:p-8"
