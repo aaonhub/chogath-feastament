@@ -1,7 +1,8 @@
 # Cho'Gath Feastament — To Do
 
 ## Features
-- [ ] Add changelog feature (editable from admin, displayed on /changelog)
+- [x] Add changelog feature (editable from admin, displayed on /changelog)
+- [x] Sync public site data from GitHub JSON
 
 ## Content
 - [ ] ADC matchups (waiting on data from ADC Cho mains)
@@ -10,6 +11,5 @@
 - [ ] Skin tier list page (need skin images from original sheet)
 
 ## Improvements
-- [ ] Sync public site data from GitHub JSON (currently reads static TypeScript at build time)
-- [ ] Mobile layout polish for lightbox
+- [x] Mobile layout polish for lightbox
 - [ ] Add more items to autocomplete/thumbnail detection

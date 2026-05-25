@@ -20,7 +20,9 @@ interface Matchup {
   abilityOrderTank: string;
 }
 
-interface MatchupData { mid: Matchup[]; top: Matchup[]; }
+interface ChangelogEntry { date: string; items: string[]; }
+
+interface MatchupData { mid: Matchup[]; top: Matchup[]; changelog: ChangelogEntry[]; }
 
 const DIFFICULTIES: Difficulty[] = ["Easy", "Medium", "Hard", "Super Hard"];
 const DIFF_COLORS: Record<Difficulty, string> = {
@@ -426,7 +428,7 @@ export default function AdminPage() {
   const [data, setData] = useState<MatchupData | null>(null);
   const [sha, setSha] = useState("");
   const [dirty, setDirty] = useState(false);
-  const [activeTab, setActiveTab] = useState<"mid" | "top">("mid");
+  const [activeTab, setActiveTab] = useState<"mid" | "top" | "changelog">("mid");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<{ lane: "mid" | "top"; index: number } | null>(null);
   const [adding, setAdding] = useState(false);
@@ -443,7 +445,7 @@ export default function AdminPage() {
         difficultyAP: (m.difficultyAP === ("Super-Hard" as string) ? "Super Hard" : m.difficultyAP) as Difficulty,
         difficultyTank: (m.difficultyTank === ("Super-Hard" as string) ? "Super Hard" : m.difficultyTank) as Difficulty,
       }));
-      setData({ mid: norm(json.data.mid), top: norm(json.data.top) });
+      setData({ mid: norm(json.data.mid), top: norm(json.data.top), changelog: json.data.changelog || [] });
       setSha(json.sha); setAuthed(true); setDirty(false);
     } catch { setError("Network error"); } finally { setLoading(false); }
   }, []);
@@ -472,7 +474,7 @@ export default function AdminPage() {
 
   if (!authed && !loading) return <LoginForm onLogin={() => { setAuthed(true); loadData(); }} />;
 
-  const matchups = data ? data[activeTab] : [];
+  const matchups: Matchup[] = data && activeTab !== "changelog" ? data[activeTab as "mid" | "top"] : [];
   const filtered = search ? matchups.filter((m) => m.champion.toLowerCase().includes(search.toLowerCase())) : matchups;
 
   return (
@@ -501,14 +503,115 @@ export default function AdminPage() {
                 {tab === "mid" ? "Mid" : "Top"} ({data?.[tab].length || 0})
               </button>
             ))}
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search champion..."
-              className="ml-auto rounded-lg border border-card-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none" />
-            <button onClick={() => setAdding(true)}
-              className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
-              + Add Matchup
+            <button onClick={() => setActiveTab("changelog")}
+              className={`rounded-lg px-4 py-2 text-sm font-bold transition ${activeTab === "changelog" ? "bg-accent text-white" : "bg-card text-foreground/50 hover:text-foreground"}`}>
+              Changelog ({data?.changelog.length || 0})
             </button>
+            {activeTab !== "changelog" && (
+              <>
+                <div className="relative ml-auto">
+                  <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search champion..."
+                    className="w-48 rounded-lg border border-card-border bg-card px-3 py-2 pr-8 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none" />
+                  {search && (
+                    <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-foreground/40 hover:text-foreground">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  )}
+                </div>
+                <button onClick={() => setAdding(true)}
+                  className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
+                  + Add Matchup
+                </button>
+              </>
+            )}
           </div>
 
+          {activeTab === "changelog" ? (
+            <div className="space-y-3">
+              <button onClick={() => {
+                if (!data) return;
+                const now = new Date();
+                const dd = String(now.getDate()).padStart(2, "0");
+                const mm = String(now.getMonth() + 1).padStart(2, "0");
+                const yyyy = now.getFullYear();
+                const todayStr = `${dd}.${mm}.${yyyy}`;
+                setData({ ...data, changelog: [{ date: todayStr, items: [""] }, ...data.changelog] });
+                setDirty(true);
+              }} className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
+                + Add Entry
+              </button>
+
+              {data?.changelog.length === 0 && (
+                <p className="py-12 text-center text-foreground/40">No changelog entries yet.</p>
+              )}
+
+              {data?.changelog.map((entry, entryIndex) => (
+                <div key={entryIndex} className="rounded-xl border border-card-border bg-card p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-foreground/50">Date</label>
+                    <input type="text" value={entry.date}
+                      onChange={(e) => {
+                        if (!data) return;
+                        const newChangelog = [...data.changelog];
+                        newChangelog[entryIndex] = { ...newChangelog[entryIndex], date: e.target.value };
+                        setData({ ...data, changelog: newChangelog }); setDirty(true);
+                      }}
+                      className="w-40 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                      placeholder="DD.MM.YYYY" />
+                    <div className="flex-1" />
+                    <button onClick={() => {
+                      if (!data) return;
+                      if (!confirm(`Delete entry for ${entry.date}?`)) return;
+                      const newChangelog = [...data.changelog];
+                      newChangelog.splice(entryIndex, 1);
+                      setData({ ...data, changelog: newChangelog }); setDirty(true);
+                    }} className="shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">
+                      Delete Entry
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {entry.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="flex items-start gap-2">
+                        <span className="mt-2 text-xs text-foreground/30">{itemIndex + 1}.</span>
+                        <textarea value={item}
+                          onChange={(e) => {
+                            if (!data) return;
+                            const newChangelog = [...data.changelog];
+                            const newItems = [...newChangelog[entryIndex].items];
+                            newItems[itemIndex] = e.target.value;
+                            newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
+                            setData({ ...data, changelog: newChangelog }); setDirty(true);
+                          }}
+                          className="flex-1 resize-none rounded-lg border border-card-border bg-background px-3 py-2 text-sm leading-relaxed text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
+                          placeholder="Changelog item..."
+                          rows={1} />
+                        <button onClick={() => {
+                          if (!data) return;
+                          const newChangelog = [...data.changelog];
+                          const newItems = [...newChangelog[entryIndex].items];
+                          newItems.splice(itemIndex, 1);
+                          newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
+                          setData({ ...data, changelog: newChangelog }); setDirty(true);
+                        }} className="mt-1.5 shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">
+                          X
+                        </button>
+                      </div>
+                    ))}
+                    <button onClick={() => {
+                      if (!data) return;
+                      const newChangelog = [...data.changelog];
+                      const newItems = [...newChangelog[entryIndex].items, ""];
+                      newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
+                      setData({ ...data, changelog: newChangelog }); setDirty(true);
+                    }} className="rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/50 transition hover:border-accent/40 hover:text-foreground">
+                      + Add Item
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
           <div className="space-y-1">
             {filtered.length === 0 ? (
               <p className="py-12 text-center text-foreground/40">No matchups found.</p>
@@ -517,7 +620,7 @@ export default function AdminPage() {
               return (
                 <div key={`${activeTab}-${realIndex}`}
                   className="flex items-center gap-3 rounded-lg border border-card-border bg-card px-4 py-2.5 transition hover:border-accent/40 cursor-pointer"
-                  onClick={() => setEditing({ lane: activeTab, index: realIndex })}>
+                  onClick={() => setEditing({ lane: activeTab as "mid" | "top", index: realIndex })}>
                   <ChampImg champKey={m.championKey} size={28} />
                   <span className="min-w-[120px] text-sm font-bold">{m.champion || "(unnamed)"}</span>
                   <span className={`rounded px-1.5 py-0.5 text-xs font-bold text-white ${DIFF_COLORS[m.difficultyAP]}`}>{m.difficultyAP}</span>
@@ -525,13 +628,15 @@ export default function AdminPage() {
                   <span className="ml-auto text-xs text-foreground/30 truncate max-w-[200px]">{m.runeAP} / {m.runeTank}</span>
                   <button onClick={(e) => { e.stopPropagation(); if (confirm(`Delete ${m.champion}?`)) {
                     if (!data) return;
-                    const newList = [...data[activeTab]]; newList.splice(realIndex, 1);
-                    setData({ ...data, [activeTab]: newList }); setDirty(true);
+                    const lane = activeTab as "mid" | "top";
+                    const newList = [...data[lane]]; newList.splice(realIndex, 1);
+                    setData({ ...data, [lane]: newList }); setDirty(true);
                   }}} className="shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">Delete</button>
                 </div>
               );
             })}
           </div>
+          )}
         </>
       )}
 
@@ -546,14 +651,15 @@ export default function AdminPage() {
         />
       )}
 
-      {adding && (
+      {adding && activeTab !== "changelog" && (
         <EditModal
           matchup={emptyMatchup()}
           isNew
-          excludeChampions={data ? data[activeTab].map((m) => m.champion) : []}
+          excludeChampions={data ? data[activeTab as "mid" | "top"].map((m) => m.champion) : []}
           onSave={(newM) => {
             if (!data) return;
-            setData({ ...data, [activeTab]: [...data[activeTab], newM] }); setDirty(true); setAdding(false);
+            const lane = activeTab as "mid" | "top";
+            setData({ ...data, [lane]: [...data[lane], newM] }); setDirty(true); setAdding(false);
           }}
           onClose={() => setAdding(false)}
         />

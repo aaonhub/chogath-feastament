@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import matchupData from "../../data/matchups.json";
 
 const socials = [
   {
@@ -137,14 +138,14 @@ export default function Home() {
           <LaneCard
             href="/mid"
             title="Mid Lane"
-            count={52}
+            count={matchupData.mid.length}
             icon="/images/mid-lane.webp"
             description="All mid lane matchups with runes, items, and ability order for both AP and Tank."
           />
           <LaneCard
             href="/top"
             title="Top Lane"
-            count={58}
+            count={matchupData.top.length}
             icon="/images/top-lane.png"
             description="All top lane matchups with runes, items, and ability order for both AP and Tank."
           />

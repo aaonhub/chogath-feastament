@@ -245,9 +245,11 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     };
   }, [handleKeyDown]);
 
@@ -322,7 +324,7 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 p-2 backdrop-blur-sm sm:items-center sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -436,13 +438,20 @@ export default function MatchupPage({
       </p>
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-        <input
-          type="text"
-          placeholder="Search champion..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 rounded-lg border border-card-border bg-card px-4 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
-        />
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search champion..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-lg border border-card-border bg-card px-4 py-2 pr-8 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-foreground/40 hover:text-foreground">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {difficulties.map((d) => (
             <button
