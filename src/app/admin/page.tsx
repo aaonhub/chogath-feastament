@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { ITEMS as ITEM_DATA, getItemImageUrl } from "@/data/items";
+import { DndContext, closestCenter, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, useSortable, horizontalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type Difficulty = "Easy" | "Medium" | "Hard" | "Super Hard";
 
@@ -274,13 +277,21 @@ function ItemsField({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
-// ── Tier Item Editor ──
+// ── Tier Item Editor (Sortable) ──
 
-function TierItemEditor({ item, onChange, onRemove }: {
+function itemIdLookup(name: string): number | null {
+  const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
+  return match?.id ?? null;
+}
+
+function SortableTierItem({ item, id, onChange, onRemove }: {
   item: { imgIndex: number; name: string };
+  id: string;
   onChange: (name: string) => void;
   onRemove: () => void;
 }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, zIndex: isDragging ? 50 : undefined };
   const [query, setQuery] = useState(item.name);
   const [open, setOpen] = useState(false);
   useEffect(() => { setQuery(item.name); }, [item.name]);
@@ -288,38 +299,28 @@ function TierItemEditor({ item, onChange, onRemove }: {
     ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
     : ITEM_NAMES.slice(0, 8);
 
-  function itemId(name: string): number | null {
-    const match = ITEM_DATA.find((i) => i.name === name || i.aliases.some((a) => a.toLowerCase() === name.toLowerCase()));
-    return match?.id ?? null;
-  }
-
   return (
-    <div className="flex flex-col items-center gap-1 w-[90px]">
-      <Image
-        src={`/images/tierlist/item_${item.imgIndex}.jpg`}
-        alt={item.name || ""}
-        width={64} height={64}
-        className="h-16 w-16 rounded border border-card-border"
-      />
+    <div ref={setNodeRef} style={style} className="flex flex-col items-center gap-1 w-[90px]">
+      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+        <Image src={`/images/tierlist/item_${item.imgIndex}.jpg`} alt={item.name || ""} width={64} height={64}
+          className="h-16 w-16 rounded border border-card-border transition hover:border-accent/60" />
+      </div>
       <div className="relative w-full">
-        <input
-          type="text"
-          value={query}
+        <input type="text" value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 200)}
           placeholder={`#${item.imgIndex}`}
-          className="w-full rounded border border-card-border bg-background px-1 py-0.5 text-center text-[10px] text-foreground focus:border-accent focus:outline-none"
-        />
+          className="w-full rounded border border-card-border bg-background px-1 py-0.5 text-center text-[10px] text-foreground focus:border-accent focus:outline-none" />
         {open && filtered.length > 0 && (
           <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-lg border border-card-border bg-card py-1 shadow-xl">
             {filtered.map((name) => {
-              const id = itemId(name);
+              const ddId = itemIdLookup(name);
               return (
                 <button key={name} type="button" onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { onChange(name); setQuery(name); setOpen(false); }}
                   className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition hover:bg-accent/20 ${name === item.name ? "text-accent-glow font-semibold" : "text-foreground/70"}`}>
-                  {id && <Image src={getItemImageUrl(id)} alt="" width={20} height={20} className="h-5 w-5 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {ddId && <Image src={getItemImageUrl(ddId)} alt="" width={20} height={20} className="h-5 w-5 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
                   {name}
                 </button>
               );
@@ -328,6 +329,49 @@ function TierItemEditor({ item, onChange, onRemove }: {
         )}
       </div>
       <button onClick={onRemove} className="rounded px-1.5 py-0.5 text-[10px] text-hard transition hover:bg-hard/20">Remove</button>
+    </div>
+  );
+}
+
+function AddItemModal({ onAdd, onClose }: { onAdd: (name: string) => void; onClose: () => void }) {
+  const [query, setQuery] = useState("");
+  const filtered = query
+    ? ITEM_NAMES.filter((n) => n.toLowerCase().includes(query.toLowerCase()))
+    : ITEM_NAMES;
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border border-card-border bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-3 border-b border-card-border px-5 py-4">
+          <h2 className="flex-1 text-lg font-bold">Add Item</h2>
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 hover:text-foreground hover:bg-card-border">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div className="p-5">
+          <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search items..." autoFocus
+            className="mb-3 w-full rounded-lg border border-card-border bg-background px-4 py-2 text-sm text-foreground placeholder:text-foreground/30 focus:border-accent focus:outline-none" />
+          <div className="max-h-64 overflow-y-auto space-y-0.5">
+            {filtered.map((name) => {
+              const ddId = itemIdLookup(name);
+              return (
+                <button key={name} type="button" onClick={() => { onAdd(name); onClose(); }}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-foreground/70 transition hover:bg-accent/20 hover:text-foreground">
+                  {ddId && <Image src={getItemImageUrl(ddId)} alt="" width={28} height={28} className="h-7 w-7 rounded border border-card-border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                  {name}
+                </button>
+              );
+            })}
+            {filtered.length === 0 && <p className="py-4 text-center text-sm text-foreground/40">No items found</p>}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -479,6 +523,110 @@ function EditModal({ matchup, onSave, onClose, isNew, excludeChampions }: {
 }
 
 // ── Main ──
+
+// ── Items Tier Admin ──
+
+function ItemsTierAdmin({ data, setData, setDirty }: {
+  data: MatchupData | null;
+  setData: (d: MatchupData) => void;
+  setDirty: (d: boolean) => void;
+}) {
+  const [addingTo, setAddingTo] = useState<{ key: "tankItems" | "apItems"; tierIndex: number } | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  function handleDragEnd(key: "tankItems" | "apItems", tierIndex: number, event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id || !data) return;
+    const items = data[key][tierIndex].items;
+    const oldIndex = items.findIndex((_, i) => `${key}-${tierIndex}-${i}` === active.id);
+    const newIndex = items.findIndex((_, i) => `${key}-${tierIndex}-${i}` === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const newTiers = [...data[key]];
+    newTiers[tierIndex] = { ...newTiers[tierIndex], items: arrayMove(items, oldIndex, newIndex) };
+    setData({ ...data, [key]: newTiers });
+    setDirty(true);
+  }
+
+  return (
+    <>
+      <div className="flex flex-col gap-10 lg:flex-row">
+        {(["tankItems", "apItems"] as const).map((key) => {
+          const label = key === "tankItems" ? "Tank" : "AP";
+          const icon = key === "tankItems" ? "/images/tank-icon.png" : "/images/mage-icon.webp";
+          const tiers: ItemTier[] = data?.[key] || [];
+          return (
+            <div key={key} className="flex-1 min-w-0">
+              <div className="mb-4 flex items-center gap-2">
+                <Image src={icon} alt="" width={24} height={24} className="h-6 w-6" />
+                <h2 className="text-lg font-bold text-foreground">{label} Items</h2>
+              </div>
+              <div className="space-y-4">
+                {tiers.map((tierRow, tierIndex) => {
+                  const ids = tierRow.items.map((_, i) => `${key}-${tierIndex}-${i}`);
+                  return (
+                    <div key={tierRow.tier} className="rounded-xl border border-card-border bg-card p-3">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="rounded bg-card-border px-2 py-0.5 text-xs font-bold text-foreground">{tierRow.tier}</span>
+                        <button onClick={() => setAddingTo({ key, tierIndex })}
+                          className="ml-auto rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent-glow transition hover:bg-accent/20">
+                          + Add Item
+                        </button>
+                      </div>
+                      <DndContext sensors={sensors} collisionDetection={closestCenter}
+                        onDragEnd={(e) => handleDragEnd(key, tierIndex, e)}>
+                        <SortableContext items={ids} strategy={horizontalListSortingStrategy}>
+                          <div className="flex flex-wrap gap-3">
+                            {tierRow.items.map((item, itemIndex) => (
+                              <SortableTierItem
+                                key={`${key}-${tierIndex}-${itemIndex}`}
+                                id={`${key}-${tierIndex}-${itemIndex}`}
+                                item={item}
+                                onChange={(name) => {
+                                  if (!data) return;
+                                  const newTiers = [...data[key]];
+                                  const newItems = [...newTiers[tierIndex].items];
+                                  newItems[itemIndex] = { ...newItems[itemIndex], name };
+                                  newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                  setData({ ...data, [key]: newTiers }); setDirty(true);
+                                }}
+                                onRemove={() => {
+                                  if (!data) return;
+                                  if (!confirm(`Remove ${item.name || `item #${item.imgIndex}`}?`)) return;
+                                  const newTiers = [...data[key]];
+                                  const newItems = [...newTiers[tierIndex].items];
+                                  newItems.splice(itemIndex, 1);
+                                  newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
+                                  setData({ ...data, [key]: newTiers }); setDirty(true);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {addingTo && (
+        <AddItemModal
+          onAdd={(name) => {
+            if (!data) return;
+            const { key, tierIndex } = addingTo;
+            const maxImg = Math.max(0, ...data[key].flatMap((t) => t.items.map((i) => i.imgIndex)));
+            const newTiers = [...data[key]];
+            newTiers[tierIndex] = { ...newTiers[tierIndex], items: [...newTiers[tierIndex].items, { imgIndex: maxImg + 1, name }] };
+            setData({ ...data, [key]: newTiers }); setDirty(true);
+          }}
+          onClose={() => setAddingTo(null)}
+        />
+      )}
+    </>
+  );
+}
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
@@ -678,70 +826,7 @@ export default function AdminPage() {
               ))}
             </div>
           ) : activeTab === "items" ? (
-            <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
-              {(["tankItems", "apItems"] as const).map((key) => {
-                const label = key === "tankItems" ? "Tank" : "AP";
-                const icon = key === "tankItems" ? "/images/tank-icon.png" : "/images/mage-icon.webp";
-                const tiers: ItemTier[] = data?.[key] || [];
-                return (
-                  <div key={key} className="flex-1 min-w-0">
-                    <div className="mb-4 flex items-center gap-2">
-                      <Image src={icon} alt="" width={24} height={24} className="h-6 w-6" />
-                      <h2 className="text-lg font-bold text-foreground">{label} Items</h2>
-                    </div>
-                    <div className="space-y-4">
-                      {tiers.map((tierRow, tierIndex) => (
-                        <div key={tierRow.tier} className="rounded-xl border border-card-border bg-card p-3">
-                          <div className="mb-2 flex items-center gap-2">
-                            <span className="rounded bg-card-border px-2 py-0.5 text-xs font-bold text-foreground">{tierRow.tier}</span>
-                            <button
-                              onClick={() => {
-                                if (!data) return;
-                                const imgIndexStr = prompt("Image index for new item:");
-                                if (imgIndexStr === null) return;
-                                const imgIndex = parseInt(imgIndexStr, 10);
-                                if (isNaN(imgIndex)) return;
-                                const newTiers = [...data[key]];
-                                const newItems = [...newTiers[tierIndex].items, { imgIndex, name: "" }];
-                                newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
-                                setData({ ...data, [key]: newTiers }); setDirty(true);
-                              }}
-                              className="ml-auto rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent-glow transition hover:bg-accent/20">
-                              + Add Item
-                            </button>
-                          </div>
-                          <div className="flex flex-wrap gap-3">
-                            {tierRow.items.map((item, itemIndex) => (
-                              <TierItemEditor
-                                key={itemIndex}
-                                item={item}
-                                onChange={(name) => {
-                                  if (!data) return;
-                                  const newTiers = [...data[key]];
-                                  const newItems = [...newTiers[tierIndex].items];
-                                  newItems[itemIndex] = { ...newItems[itemIndex], name };
-                                  newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
-                                  setData({ ...data, [key]: newTiers }); setDirty(true);
-                                }}
-                                onRemove={() => {
-                                  if (!data) return;
-                                  if (!confirm(`Remove item #${item.imgIndex} (${item.name || "unnamed"})?`)) return;
-                                  const newTiers = [...data[key]];
-                                  const newItems = [...newTiers[tierIndex].items];
-                                  newItems.splice(itemIndex, 1);
-                                  newTiers[tierIndex] = { ...newTiers[tierIndex], items: newItems };
-                                  setData({ ...data, [key]: newTiers }); setDirty(true);
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <ItemsTierAdmin data={data} setData={setData} setDirty={setDirty} />
           ) : (
           <div className="space-y-1">
             {filtered.length === 0 ? (
