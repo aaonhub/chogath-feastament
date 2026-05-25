@@ -323,8 +323,8 @@ function SortableTierItem({ item, id, onChange, onRemove, itemNames, itemIdMap }
   itemNames: string[];
   itemIdMap?: Record<string, number>;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1, zIndex: isDragging ? 50 : undefined };
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, transition: { duration: 150, easing: "ease" } });
+  const style = { transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.5 : 1, zIndex: isDragging ? 50 : undefined };
   const [query, setQuery] = useState(item.name);
   const [open, setOpen] = useState(false);
   useEffect(() => { setQuery(item.name); }, [item.name]);
