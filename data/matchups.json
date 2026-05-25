@@ -1692,7 +1692,7 @@
         },
         {
           "imgIndex": 24,
-          "name": "Malignance"
+          "name": "Riftmaker"
         }
       ]
     },
@@ -1701,7 +1701,7 @@
       "items": [
         {
           "imgIndex": 25,
-          "name": "Horizon Focus"
+          "name": "Shadowflame"
         },
         {
           "imgIndex": 26,
@@ -1713,7 +1713,7 @@
         },
         {
           "imgIndex": 28,
-          "name": "Cosmic Drive"
+          "name": "Hextech Rocketbelt"
         },
         {
           "imgIndex": 29,
@@ -1742,7 +1742,7 @@
         },
         {
           "imgIndex": 34,
-          "name": "Zhonya's Hourglass"
+          "name": "Bloodletter's Curse"
         },
         {
           "imgIndex": 35,
@@ -1763,15 +1763,15 @@
       "items": [
         {
           "imgIndex": 38,
-          "name": "Riftmaker"
-        },
-        {
-          "imgIndex": 39,
           "name": "Nashor's Tooth"
         },
         {
+          "imgIndex": 39,
+          "name": "Archangel's Staff"
+        },
+        {
           "imgIndex": 40,
-          "name": "Rabadon's Deathcap"
+          "name": "Blackfire Torch"
         },
         {
           "imgIndex": 41,
@@ -1784,7 +1784,7 @@
       "items": [
         {
           "imgIndex": 42,
-          "name": ""
+          "name": "Rylai's Crystal Scepter"
         }
       ]
     },
@@ -1797,7 +1797,7 @@
         },
         {
           "imgIndex": 45,
-          "name": "Dark Seal"
+          "name": "Mejai's Soulstealer"
         },
         {
           "imgIndex": 46,
