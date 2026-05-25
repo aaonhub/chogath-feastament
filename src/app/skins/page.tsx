@@ -20,7 +20,7 @@ const tiers = [
 
 export default function SkinsPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <h1 className="mb-1 text-3xl font-bold">Skin Tier List</h1>
       <p className="mb-8 text-foreground/50">
         Sakuritou&apos;s Cho&apos;Gath skin rankings.
@@ -33,11 +33,11 @@ export default function SkinsPage() {
             className="flex items-center border-b border-card-border last:border-b-0"
           >
             <div
-              className={`flex w-24 shrink-0 items-center justify-center self-stretch text-xl font-bold ${TIER_COLORS[row.tier]}`}
+              className={`flex w-16 shrink-0 items-center justify-center self-stretch text-2xl font-bold ${TIER_COLORS[row.tier]}`}
             >
               {row.tier}
             </div>
-            <div className="flex flex-wrap gap-3 bg-[#434343] p-3 flex-1 min-h-[90px]">
+            <div className="flex flex-wrap gap-3 bg-[#434343] p-4 flex-1 min-h-[140px]">
               {row.skins.length === 0 ? (
                 <span className="text-sm text-foreground/30 self-center">—</span>
               ) : (
@@ -46,9 +46,9 @@ export default function SkinsPage() {
                     key={i}
                     src={`/images/tierlist/skin_${i}.jpg`}
                     alt=""
-                    width={180}
-                    height={106}
-                    className="h-[80px] w-auto rounded border border-card-border object-cover"
+                    width={320}
+                    height={189}
+                    className="h-[130px] w-auto rounded-lg border border-card-border object-cover"
                   />
                 ))
               )}
