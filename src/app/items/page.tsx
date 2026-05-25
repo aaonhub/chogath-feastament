@@ -61,7 +61,7 @@ function TierList({
             >
               {row.label}
             </div>
-            <div className="flex flex-wrap gap-1.5 bg-[#434343] p-2 flex-1 min-h-[56px]">
+            <div className="flex flex-wrap gap-2 bg-[#434343] px-2 py-1.5 flex-1 min-h-[60px]">
               {row.items.map((i) => (
                 <Image
                   key={i}
@@ -69,7 +69,7 @@ function TierList({
                   alt=""
                   width={48}
                   height={48}
-                  className="h-12 w-12 rounded border border-card-border"
+                  className="h-14 w-14 rounded border border-card-border"
                 />
               ))}
             </div>
@@ -82,7 +82,7 @@ function TierList({
 
 export default function ItemsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <h1 className="mb-1 text-3xl font-bold">Item Tier List</h1>
       <p className="mb-8 text-foreground/50">
         Sakuritou&apos;s item rankings for Cho&apos;Gath. Order within tiers
