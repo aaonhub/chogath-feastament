@@ -84,8 +84,8 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
       {/* Hero */}
-      <div className="mb-12 flex justify-end">
-        <div className="text-right">
+      <div className="mb-12 flex justify-start">
+        <div className="text-left">
           <h1 className="mb-2 text-5xl font-extrabold tracking-tight sm:text-6xl">
             <span className="text-accent-glow">Cho&apos;Gath</span> Feastament
           </h1>
