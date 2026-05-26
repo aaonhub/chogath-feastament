@@ -1,6 +1,36 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import matchupData from "../../data/matchups.json";
+
+function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        <Image src={src} alt="" width={1200} height={1200} className="max-h-[90vh] w-auto rounded-xl border border-card-border object-contain" />
+        <button onClick={onClose} className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card border border-card-border text-foreground/60 hover:text-foreground">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ClickableImage({ src, alt, width, height, className, style }: {
+  src: string; alt: string; width: number; height: number; className?: string; style?: React.CSSProperties;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)} className="transition hover:brightness-110 hover:scale-[1.02]">
+        <Image src={src} alt={alt} width={width} height={height} className={className} style={style} />
+      </button>
+      {open && <ImageLightbox src={src} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
 
 const socials = [
   {
@@ -69,7 +99,7 @@ export default function Home() {
       <section className="mb-12 overflow-hidden rounded-xl border border-card-border bg-card">
         <div className="flex flex-col items-center gap-6 p-8 sm:flex-row sm:items-start">
           <div className="shrink-0">
-            <Image
+            <ClickableImage
               src="/images/saku-profile.jpg"
               alt="Sakuritou's Challenger profile"
               width={452}
@@ -78,7 +108,7 @@ export default function Home() {
               style={{ width: "520px", height: "auto" }}
             />
             <div className="mt-3 flex gap-3">
-              <Image
+              <ClickableImage
                 src="/images/challenger.jpg"
                 alt="Promoted to Challenger"
                 width={320}
@@ -86,7 +116,7 @@ export default function Home() {
                 className="rounded-lg border border-card-border"
                 style={{ height: "340px", width: "auto" }}
               />
-              <Image
+              <ClickableImage
                 src="/images/saku-opgg.jpg"
                 alt="Sakuritou's OP.GG stats"
                 width={454}
@@ -111,7 +141,7 @@ export default function Home() {
               <span className="text-foreground/90 font-semibold">Swaggy</span>. All matchups
               are based on GM+ experience.
             </p>
-            <Image
+            <ClickableImage
               src="/images/saku-rank1.jpg"
               alt="Rank 1 All Time"
               width={434}
