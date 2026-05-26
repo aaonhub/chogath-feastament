@@ -54,13 +54,15 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
       {/* Hero */}
-      <div className="mb-12 text-center">
-        <h1 className="mb-2 text-5xl font-extrabold tracking-tight sm:text-6xl">
-          <span className="text-accent-glow">Cho&apos;Gath</span> Feastament
-        </h1>
-        <p className="text-lg text-foreground/50">
-          The definitive matchup guide &mdash; Makkro approved
-        </p>
+      <div className="mb-12 flex justify-end">
+        <div className="text-right">
+          <h1 className="mb-2 text-5xl font-extrabold tracking-tight sm:text-6xl">
+            <span className="text-accent-glow">Cho&apos;Gath</span> Feastament
+          </h1>
+          <p className="text-lg text-foreground/50">
+            The definitive matchup guide &mdash; Makkro approved
+          </p>
+        </div>
       </div>
 
       {/* Author */}
@@ -73,7 +75,7 @@ export default function Home() {
               width={452}
               height={438}
               className="rounded-lg border border-card-border"
-              style={{ width: "452px", height: "auto" }}
+              style={{ width: "520px", height: "auto" }}
             />
             <div className="mt-3 flex gap-3">
               <Image
@@ -82,7 +84,7 @@ export default function Home() {
                 width={320}
                 height={431}
                 className="rounded-lg border border-card-border"
-                style={{ height: "280px", width: "auto" }}
+                style={{ height: "340px", width: "auto" }}
               />
               <Image
                 src="/images/saku-opgg.jpg"
@@ -90,7 +92,7 @@ export default function Home() {
                 width={454}
                 height={431}
                 className="rounded-lg border border-card-border"
-                style={{ height: "280px", width: "auto" }}
+                style={{ height: "340px", width: "auto" }}
               />
             </div>
           </div>
