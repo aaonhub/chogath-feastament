@@ -99,8 +99,7 @@ export default function Home() {
               alt="Sakuritou's Challenger profile"
               width={452}
               height={438}
-              className="rounded-lg border border-card-border"
-              style={{ width: "520px", height: "auto" }}
+              className="w-full rounded-lg border border-card-border lg:w-[520px]"
             />
             <div className="mt-3 flex gap-3">
               <ClickableImage
@@ -108,16 +107,14 @@ export default function Home() {
                 alt="Promoted to Challenger"
                 width={320}
                 height={431}
-                className="rounded-lg border border-card-border"
-                style={{ height: "340px", width: "auto" }}
+                className="flex-1 min-w-0 rounded-lg border border-card-border"
               />
               <ClickableImage
                 src="/images/saku-opgg.jpg"
                 alt="Sakuritou's OP.GG stats"
                 width={454}
                 height={431}
-                className="rounded-lg border border-card-border"
-                style={{ height: "340px", width: "auto" }}
+                className="flex-1 min-w-0 rounded-lg border border-card-border"
               />
             </div>
           </div>

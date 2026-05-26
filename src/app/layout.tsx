@@ -39,7 +39,7 @@ function Nav() {
     },
     { href: "/items", label: "Items", icon: null },
     { href: "/skins", label: "Skins", icon: null },
-    { href: "/changelog", label: "Changelog", icon: null },
+    { href: "/changelog", label: "Log", fullLabel: "Changelog", icon: null },
   ];
 
   return (
@@ -55,10 +55,11 @@ function Nav() {
           <Link
             key={l.href}
             href={l.href}
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-foreground/70 transition hover:bg-card hover:text-foreground sm:gap-1.5 sm:px-3 sm:text-sm"
+            className="inline-flex items-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium text-foreground/70 transition hover:bg-card hover:text-foreground sm:gap-1.5 sm:px-3 sm:text-sm"
           >
             {l.icon}
-            <span className={l.icon ? "hidden sm:inline" : ""}>{l.label}</span>
+            <span className="sm:hidden">{l.label}</span>
+            <span className="hidden sm:inline">{(l as { fullLabel?: string }).fullLabel || l.label}</span>
           </Link>
         ))}
       </div>
