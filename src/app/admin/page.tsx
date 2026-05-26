@@ -748,7 +748,7 @@ function ChangelogEntryModal({ entry, onSave, onClose, isNew, diffChanges, diffL
 
               {diffLoading && <p className="py-8 text-center text-sm text-foreground/40">Loading changes...</p>}
 
-              {!diffLoading && diffChanges.length > 0 && (
+              {!diffLoading && diffChanges && diffChanges.length > 0 && (
                 <div className="space-y-1.5 mb-6">
                   {diffChanges.map((c, i) => (
                     <button key={i} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), c] }))}
