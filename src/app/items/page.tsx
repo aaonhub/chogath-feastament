@@ -260,6 +260,19 @@ export default function ItemsPage() {
         <TierList title="Tank" tiers={tankTiers} icon="/images/tank-icon.png" onItemClick={setSelected} db={db} />
         <TierList title="AP" tiers={apTiers} icon="/images/mage-icon.webp" onItemClick={setSelected} db={db} />
       </div>
+
+      {/* The sacred plea */}
+      <div className="mt-10 flex flex-col items-center gap-2">
+        <div className="relative">
+          <Image src="/images/pepe.jpg" alt="" width={80} height={60} className="absolute -left-16 -top-2 h-14 w-auto -rotate-12" />
+          <p className="text-2xl font-black tracking-wide text-foreground/80" style={{ fontFamily: "Impact, sans-serif" }}>
+            BRING IT BACK RIOT!
+          </p>
+        </div>
+        <Image src="/images/bring-it-back.jpg" alt="We miss you" width={150} height={150} className="rounded-xl border-2 border-card-border shadow-lg shadow-cyan-500/20" />
+        <p className="mt-2 text-xs italic text-foreground/30">The order of items in the tiers doesn&apos;t mean anything.</p>
+      </div>
+
       {selected && <ItemModal entry={selected} onClose={() => setSelected(null)} db={db} />}
     </div>
   );
