@@ -69,7 +69,6 @@ interface ItemDetail {
   gold: number;
   stats: string[];
   passive: string;
-  note?: string;
 }
 
 interface ItemEntry {
@@ -84,41 +83,41 @@ const D: Record<string, ItemDetail> = {
   "Jak'Sho, The Protean": { gold: 2800, stats: ["400 Health", "30 Armor", "30 Magic Resist"], passive: "Voidborn Resilience — In combat, gain stacking Armor and MR. At max stacks, drain nearby enemies." },
   "Hollow Radiance": { gold: 2800, stats: ["400 Health", "40 Magic Resist", "10 Ability Haste", "100% Base Health Regen"], passive: "Immolate — Deal magic damage per second to nearby enemies. Immobilize enemies to gain a shield." },
   "Unending Despair": { gold: 2800, stats: ["400 Health", "25 Armor", "25 Magic Resist", "10 Ability Haste"], passive: "Anguish — Every 4 seconds in combat with champions, drain nearby enemies for Health." },
-  "Heartsteel": { gold: 3000, stats: ["900 Health", "100% Base Health Regen"], passive: "Colossal Consumption — Charge up a powerful attack against a champion. Deals bonus damage and grants permanent max Health.", note: "Core stacking item for Tank Cho'Gath. Pairs well with Feast stacks." },
+  "Heartsteel": { gold: 3000, stats: ["900 Health", "100% Base Health Regen"], passive: "Colossal Consumption — Charge up a powerful attack against a champion. Deals bonus damage and grants permanent max Health." },
   "Fimbulwinter": { gold: 2400, stats: ["550 Health", "860 Mana", "15 Ability Haste"], passive: "Everlasting — Immobilizing or Slowing (melee) a champion consumes Mana to grant a shield." },
-  "Force of Nature": { gold: 2800, stats: ["400 Health", "55 Magic Resist", "4% Move Speed"], passive: "Steadfast — After taking magic damage, gain stacking MR and MS. At max: +70 MR, +6% MS.", note: "Best anti-AP item. Shuts down mages completely." },
+  "Force of Nature": { gold: 2800, stats: ["400 Health", "55 Magic Resist", "4% Move Speed"], passive: "Steadfast — After taking magic damage, gain stacking MR and MS. At max: +70 MR, +6% MS." },
   "Abyssal Mask": { gold: 2650, stats: ["350 Health", "45 Magic Resist", "15 Ability Haste"], passive: "Unmake — Nearby enemy champions take 12% more magic damage." },
-  "Dead Man's Plate": { gold: 2900, stats: ["350 Health", "55 Armor", "4% Move Speed"], passive: "Shipwrecker — While moving, build up to 20 bonus Move Speed. Next Attack discharges stacks as bonus damage.", note: "Great for gap-closing onto carries." },
+  "Dead Man's Plate": { gold: 2900, stats: ["350 Health", "55 Armor", "4% Move Speed"], passive: "Shipwrecker — While moving, build up to 20 bonus Move Speed. Next Attack discharges stacks as bonus damage." },
   "Spirit Visage": { gold: 2500, stats: ["400 Health", "50 Magic Resist", "10 Ability Haste", "100% Base Health Regen"], passive: "Boundless Vitality — Increases all Healing and Shielding effectiveness on you by 25%." },
   "Sunfire Aegis": { gold: 2700, stats: ["350 Health", "50 Armor", "10 Ability Haste"], passive: "Immolate — Deal magic damage per second to nearby enemies. Immobilize to release a wave of flame." },
-  "Frozen Heart": { gold: 2500, stats: ["75 Armor", "400 Mana", "20 Ability Haste"], passive: "Winter's Caress — Reduce Attack Speed of nearby enemies by 20%.", note: "Great vs Irelia, Yasuo, Yone, and other AS champions." },
-  "Randuin's Omen": { gold: 2700, stats: ["350 Health", "75 Armor"], passive: "Resilience — Take 30% less damage from Critical Strikes.\nHumility — Activate to slow nearby enemies.", note: "Build if enemy has crit champions." },
+  "Frozen Heart": { gold: 2500, stats: ["75 Armor", "400 Mana", "20 Ability Haste"], passive: "Winter's Caress — Reduce Attack Speed of nearby enemies by 20%." },
+  "Randuin's Omen": { gold: 2700, stats: ["350 Health", "75 Armor"], passive: "Resilience — Take 30% less damage from Critical Strikes.\nHumility — Activate to slow nearby enemies." },
   "Thornmail": { gold: 2450, stats: ["150 Health", "75 Armor"], passive: "Thorns — When struck by an Attack, deal magic damage to the attacker and apply 40% Grievous Wounds." },
   "Gargoyle Stoneplate": { gold: 3150, stats: ["60 Armor", "60 Magic Resist", "15 Ability Haste"], passive: "Fortify — Taking damage from a champion grants stacking Armor and MR.\nActivate for a large shield based on bonus Health." },
-  "Bramble Vest": { gold: 800, stats: ["30 Armor"], passive: "Thorns — When hit by an Attack, deal magic damage and apply 40% Grievous Wounds for 3s.", note: "Rush vs healing laners like Warwick, Aatrox." },
+  "Bramble Vest": { gold: 800, stats: ["30 Armor"], passive: "Thorns — When hit by an Attack, deal magic damage and apply 40% Grievous Wounds for 3s." },
   "Luden's Companion": { gold: 2750, stats: ["100 Ability Power", "600 Mana", "10 Ability Haste"], passive: "Fire — Damaging Abilities fire 6 shots dealing bonus magic damage, chaining to nearby enemies." },
-  "Shurelya's Battlesong": { gold: 2200, stats: ["50 Ability Power", "15 Ability Haste", "4% Move Speed", "125% Base Mana Regen"], passive: "Inspiring Speech — Activate to grant nearby allies bonus Move Speed.", note: "Core for Roam'Gath build." },
-  "Rod of Ages": { gold: 2600, stats: ["45 Ability Power", "350 Health", "400 Mana"], passive: "Timeless — Gains 10 Health, 20 Mana, and 3 AP every minute for 10 minutes. Level up to restore Health and Mana.", note: "Great scaling pick to match late-game champions." },
+  "Shurelya's Battlesong": { gold: 2200, stats: ["50 Ability Power", "15 Ability Haste", "4% Move Speed", "125% Base Mana Regen"], passive: "Inspiring Speech — Activate to grant nearby allies bonus Move Speed." },
+  "Rod of Ages": { gold: 2600, stats: ["45 Ability Power", "350 Health", "400 Mana"], passive: "Timeless — Gains 10 Health, 20 Mana, and 3 AP every minute for 10 minutes. Level up to restore Health and Mana." },
   "Malignance": { gold: 2700, stats: ["90 Ability Power", "600 Mana", "15 Ability Haste"], passive: "Scorn — Gain 20 Ultimate Ability Haste.\nHatefog — Damaging a champion with your ult creates a damage zone." },
-  "Horizon Focus": { gold: 2900, stats: ["110 Ability Power", "25 Ability Haste"], passive: "Hypershot — Dealing ability damage at 600+ range or to immobilized enemies calls down lightning.", note: "Good for Haste and reveals targets hit by Q." },
-  "Boots of Swiftness": { gold: 1000, stats: ["+55 Move Speed"], passive: "Fleetfooted — Reduce slow effectiveness by 25%.", note: "Best boots for most matchups. Dodge skillshots and escape ganks." },
+  "Horizon Focus": { gold: 2900, stats: ["110 Ability Power", "25 Ability Haste"], passive: "Hypershot — Dealing ability damage at 600+ range or to immobilized enemies calls down lightning." },
+  "Boots of Swiftness": { gold: 1000, stats: ["+55 Move Speed"], passive: "Fleetfooted — Reduce slow effectiveness by 25%." },
   "Void Staff": { gold: 3000, stats: ["95 Ability Power", "40% Magic Penetration"], passive: "Pure magic penetration. No unique passive." },
   "Cosmic Drive": { gold: 3000, stats: ["70 Ability Power", "350 Health", "25 Ability Haste", "4% Move Speed"], passive: "Spelldance — Dealing magic or true damage to champions grants bonus Move Speed." },
   "Stormsurge": { gold: 2800, stats: ["90 Ability Power", "15 Magic Penetration", "6% Move Speed"], passive: "Stormraider — Dealing 25% of a champion's max Health triggers a lightning proc for bonus damage." },
-  "Banshee's Veil": { gold: 3000, stats: ["105 Ability Power", "40 Magic Resist"], passive: "Annul — Periodically grants a Spell Shield that blocks the next enemy Ability.", note: "Removes engage threat from Syndra, Ahri, etc." },
+  "Banshee's Veil": { gold: 3000, stats: ["105 Ability Power", "40 Magic Resist"], passive: "Annul — Periodically grants a Spell Shield that blocks the next enemy Ability." },
   "Lich Bane": { gold: 2900, stats: ["100 Ability Power", "4% Move Speed", "10 Ability Haste"], passive: "Spellblade — After using an Ability, your next Attack deals bonus magic damage." },
   "Shadowflame": { gold: 3200, stats: ["110 Ability Power", "15 Magic Penetration"], passive: "Cinderbloom — Magic and true damage Critically Strikes enemies below 35% Health." },
   "Seraph's Embrace": { gold: 2900, stats: ["70 Ability Power", "1000 Mana", "25 Ability Haste"], passive: "Awe — Gain AP equal to 4% bonus Mana.\nLifeline — Shield when taking damage below 30% Health." },
-  "Zhonya's Hourglass": { gold: 3250, stats: ["105 Ability Power", "50 Armor"], passive: "Time Stop — Activate to enter Stasis for 2.5 seconds. Invincible but unable to act.", note: "Essential vs assassins. Denies ult-reliant champions." },
-  "Liandry's Torment": { gold: 3000, stats: ["60 Ability Power", "300 Health"], passive: "Torment — Damaging Abilities burn for 2% max Health magic damage per second for 3s.", note: "Strong vs durable/tank enemies." },
+  "Zhonya's Hourglass": { gold: 3250, stats: ["105 Ability Power", "50 Armor"], passive: "Time Stop — Activate to enter Stasis for 2.5 seconds. Invincible but unable to act." },
+  "Liandry's Torment": { gold: 3000, stats: ["60 Ability Power", "300 Health"], passive: "Torment — Damaging Abilities burn for 2% max Health magic damage per second for 3s." },
   "Rylai's Crystal Scepter": { gold: 2600, stats: ["65 Ability Power", "400 Health"], passive: "Rimefrost — Damaging Abilities Slow enemies by 30% for 1 second." },
   "Morellonomicon": { gold: 2850, stats: ["75 Ability Power", "350 Health", "15 Ability Haste"], passive: "Grievous Wounds — Dealing magic damage applies 40% Wounds to champions." },
   "Riftmaker": { gold: 3100, stats: ["70 Ability Power", "350 Health", "15 Ability Haste"], passive: "Void Corruption — For each second in combat, deal increasing bonus damage. At max stacks, excess damage converts to true damage." },
   "Nashor's Tooth": { gold: 2900, stats: ["80 Ability Power", "50% Attack Speed", "15 Ability Haste"], passive: "Icathian Bite — Attacks deal bonus magic damage On-Hit." },
   "Rabadon's Deathcap": { gold: 3500, stats: ["130 Ability Power"], passive: "Magical Opus — Increases your total Ability Power by 30%." },
   "Cryptbloom": { gold: 3000, stats: ["75 Ability Power", "30% Magic Pen", "20 Ability Haste"], passive: "Life from Death — When a champion you damaged recently dies, heal nearby allies." },
-  "Oblivion Orb": { gold: 800, stats: ["25 Ability Power"], passive: "Grievous Wounds — Magic damage applies 40% Wounds for 3s.", note: "Cheap early anti-heal component." },
-  "Dark Seal": { gold: 350, stats: ["15 Ability Power", "50 Health"], passive: "Glory — Takedowns grant stacks (up to 10). Gain 4 AP per stack. Lose 5 on death.", note: "Great snowball item for easy matchups." },
+  "Oblivion Orb": { gold: 800, stats: ["25 Ability Power"], passive: "Grievous Wounds — Magic damage applies 40% Wounds for 3s." },
+  "Dark Seal": { gold: 350, stats: ["15 Ability Power", "50 Health"], passive: "Glory — Takedowns grant stacks (up to 10). Gain 4 AP per stack. Lose 5 on death." },
 };
 
 function toEntry(raw: { imgIndex: number; name: string }): ItemEntry {
@@ -159,8 +158,6 @@ function ItemModal({ entry, onClose, db }: { entry: ItemEntry; onClose: () => vo
   const gold = hardcoded?.gold ?? live?.gold;
   const stats = hardcoded?.stats ?? live?.stats ?? [];
   const passive = hardcoded?.passive ?? live?.passive ?? "";
-  const note = hardcoded?.note;
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="rounded-2xl border border-card-border bg-card shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
@@ -197,13 +194,6 @@ function ItemModal({ entry, onClose, db }: { entry: ItemEntry; onClose: () => vo
               {passive.split("\n").map((line, i) => (
                 <p key={i} className="text-sm leading-relaxed text-foreground/70 mb-1 last:mb-0">{line}</p>
               ))}
-            </div>
-          )}
-
-          {note && (
-            <div className="rounded-lg bg-accent/10 border border-accent/20 px-4 py-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-accent-glow mb-1">Cho&apos;Gath Note</h3>
-              <p className="text-sm leading-relaxed text-foreground/70">{note}</p>
             </div>
           )}
 
