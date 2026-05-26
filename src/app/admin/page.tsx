@@ -715,8 +715,8 @@ function ItemsTierAdmin({ data, setData, setDirty, itemNames, itemIdMap }: {
 
 // ── Changelog Admin ──
 
-function ChangelogEntryModal({ entry, onSave, onClose, isNew, summaryData }: {
-  entry: ChangelogEntry; onSave: (e: ChangelogEntry) => void; onClose: () => void; isNew?: boolean; summaryData?: MatchupData;
+function ChangelogEntryModal({ entry, onSave, onClose, isNew, diffChanges, diffLoading }: {
+  entry: ChangelogEntry; onSave: (e: ChangelogEntry) => void; onClose: () => void; isNew?: boolean; diffChanges?: string[]; diffLoading?: boolean;
 }) {
   const [e, setE] = useState<ChangelogEntry>({ ...entry, items: [...entry.items] });
 
@@ -741,79 +741,46 @@ function ChangelogEntryModal({ entry, onSave, onClose, isNew, summaryData }: {
 
         <div className="flex flex-col lg:flex-row">
           {/* Left: Changes reference (for new entries) */}
-          {isNew && summaryData && (
+          {isNew && (
             <div className="border-b border-card-border p-6 lg:w-1/2 lg:border-b-0 lg:border-r max-h-[70vh] overflow-y-auto">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-amber-400">Current Guide State</h3>
-              <p className="mb-4 text-xs text-foreground/40">Click any line to add it to your entry.</p>
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-amber-400">Changes Since Last Changelog</h3>
+              <p className="mb-4 text-xs text-foreground/40">Click any to add it to your entry.</p>
 
-              {/* Mid matchups */}
-              <div className="mb-4">
-                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Mid Matchups ({summaryData.mid.length})</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {summaryData.mid.map((m) => (
-                    <button key={m.champion} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), `Updated ${m.champion} mid matchup`] }))}
-                      className="flex items-center gap-1 rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/60 transition hover:border-accent/40 hover:text-foreground">
-                      <ChampImg champKey={m.championKey} size={16} />
-                      {m.champion}
+              {diffLoading && <p className="py-8 text-center text-sm text-foreground/40">Loading changes...</p>}
+
+              {!diffLoading && diffChanges.length > 0 && (
+                <div className="space-y-1.5 mb-6">
+                  {diffChanges.map((c, i) => (
+                    <button key={i} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), c] }))}
+                      className="flex w-full items-center gap-2 rounded-lg border border-card-border bg-background px-3 py-2 text-left text-sm text-foreground/70 transition hover:border-accent/40 hover:text-foreground">
+                      <span className={`shrink-0 h-2 w-2 rounded-full ${c.startsWith("Added") ? "bg-easy" : c.startsWith("Removed") ? "bg-hard" : "bg-medium"}`} />
+                      {c}
                     </button>
                   ))}
+                  <button onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), ...diffChanges.filter((c) => c !== "No data changes detected")] }))}
+                    className="mt-2 w-full rounded-lg border border-accent/30 bg-accent/5 px-3 py-2 text-center text-xs font-semibold text-accent-glow transition hover:bg-accent/10">
+                    Add All Changes
+                  </button>
                 </div>
-              </div>
-
-              {/* Top matchups */}
-              <div className="mb-4">
-                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Top Matchups ({summaryData.top.length})</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {summaryData.top.map((m) => (
-                    <button key={m.champion} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), `Updated ${m.champion} top matchup`] }))}
-                      className="flex items-center gap-1 rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/60 transition hover:border-accent/40 hover:text-foreground">
-                      <ChampImg champKey={m.championKey} size={16} />
-                      {m.champion}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Item tiers */}
-              <div className="mb-4">
-                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Item Tier List</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { label: "Updated Tank item tier list", key: "tank" },
-                    { label: "Updated AP item tier list", key: "ap" },
-                  ].map((t) => (
-                    <button key={t.key} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), t.label] }))}
-                      className="rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/60 transition hover:border-accent/40 hover:text-foreground">
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Quick templates */}
-              <div>
-                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Quick Templates</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    "Adjusted matchup difficulties",
-                    "Updated item recommendations",
-                    "Added new matchup(s)",
-                    "Updated rune recommendations",
-                    "General advice improvements",
-                    "Patch changes applied",
-                  ].map((t) => (
-                    <button key={t} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), t] }))}
-                      className="rounded border border-dashed border-accent/30 bg-accent/5 px-2 py-1 text-xs text-accent-glow/70 transition hover:bg-accent/10 hover:text-accent-glow">
-                      {t}
-                    </button>
-                  ))}
-                </div>
+              <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Quick Templates</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {["Adjusted matchup difficulties", "Updated item recommendations", "Added new matchup(s)",
+                  "Updated rune recommendations", "General advice improvements", "Patch changes applied",
+                ].map((t) => (
+                  <button key={t} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), t] }))}
+                    className="rounded border border-dashed border-accent/30 bg-accent/5 px-2 py-1 text-xs text-accent-glow/70 transition hover:bg-accent/10 hover:text-accent-glow">
+                    {t}
+                  </button>
+                ))}
               </div>
             </div>
           )}
 
           {/* Right (or full): Entry editor */}
-          <div className={`p-6 space-y-4 ${isNew && summaryData ? "lg:w-1/2" : "w-full"}`}>
+          <div className={`p-6 space-y-4 ${isNew ? "lg:w-1/2" : "w-full"}`}>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Date</label>
               <input type="text" value={e.date} onChange={(ev) => setE({ ...e, date: ev.target.value })}
@@ -853,6 +820,69 @@ function ChangelogAdmin({ data, setData, setDirty }: {
 }) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [addingNew, setAddingNew] = useState(false);
+  const [diffChanges, setDiffChanges] = useState<string[]>([]);
+  const [diffLoading, setDiffLoading] = useState(false);
+
+  function computeDiff(oldData: MatchupData, newData: MatchupData): string[] {
+    const changes: string[] = [];
+    const oldMidNames = new Set(oldData.mid.map((m) => m.champion));
+    const oldTopNames = new Set(oldData.top.map((m) => m.champion));
+    for (const m of newData.mid) { if (!oldMidNames.has(m.champion)) changes.push(`Added ${m.champion} to mid matchups`); }
+    for (const m of newData.top) { if (!oldTopNames.has(m.champion)) changes.push(`Added ${m.champion} to top matchups`); }
+    for (const m of oldData.mid) { if (!newData.mid.find((n) => n.champion === m.champion)) changes.push(`Removed ${m.champion} from mid matchups`); }
+    for (const m of oldData.top) { if (!newData.top.find((n) => n.champion === m.champion)) changes.push(`Removed ${m.champion} from top matchups`); }
+    for (const m of newData.mid) {
+      const old = oldData.mid.find((o) => o.champion === m.champion);
+      if (!old) continue;
+      if (old.difficultyAP !== m.difficultyAP) changes.push(`${m.champion} mid AP difficulty: ${old.difficultyAP} → ${m.difficultyAP}`);
+      if (old.difficultyTank !== m.difficultyTank) changes.push(`${m.champion} mid Tank difficulty: ${old.difficultyTank} → ${m.difficultyTank}`);
+      if (old.runeAP !== m.runeAP) changes.push(`${m.champion} mid AP rune changed`);
+      if (old.runeTank !== m.runeTank) changes.push(`${m.champion} mid Tank rune changed`);
+      if (old.advice !== m.advice) changes.push(`${m.champion} mid advice updated`);
+      if (old.itemsAP !== m.itemsAP) changes.push(`${m.champion} mid AP items updated`);
+      if (old.itemsTank !== m.itemsTank) changes.push(`${m.champion} mid Tank items updated`);
+    }
+    for (const m of newData.top) {
+      const old = oldData.top.find((o) => o.champion === m.champion);
+      if (!old) continue;
+      if (old.difficultyAP !== m.difficultyAP) changes.push(`${m.champion} top AP difficulty: ${old.difficultyAP} → ${m.difficultyAP}`);
+      if (old.difficultyTank !== m.difficultyTank) changes.push(`${m.champion} top Tank difficulty: ${old.difficultyTank} → ${m.difficultyTank}`);
+      if (old.runeAP !== m.runeAP) changes.push(`${m.champion} top AP rune changed`);
+      if (old.runeTank !== m.runeTank) changes.push(`${m.champion} top Tank rune changed`);
+      if (old.advice !== m.advice) changes.push(`${m.champion} top advice updated`);
+      if (old.itemsAP !== m.itemsAP) changes.push(`${m.champion} top AP items updated`);
+      if (old.itemsTank !== m.itemsTank) changes.push(`${m.champion} top Tank items updated`);
+    }
+    const oldTankItems = new Set((oldData.tankItems || []).flatMap((t) => t.items.map((i) => i.name)).filter(Boolean));
+    const newTankItems = new Set((newData.tankItems || []).flatMap((t) => t.items.map((i) => i.name)).filter(Boolean));
+    for (const n of newTankItems) { if (!oldTankItems.has(n)) changes.push(`Added ${n} to tank tier list`); }
+    for (const n of oldTankItems) { if (!newTankItems.has(n)) changes.push(`Removed ${n} from tank tier list`); }
+    const oldApItems = new Set((oldData.apItems || []).flatMap((t) => t.items.map((i) => i.name)).filter(Boolean));
+    const newApItems = new Set((newData.apItems || []).flatMap((t) => t.items.map((i) => i.name)).filter(Boolean));
+    for (const n of newApItems) { if (!oldApItems.has(n)) changes.push(`Added ${n} to AP tier list`); }
+    for (const n of oldApItems) { if (!newApItems.has(n)) changes.push(`Removed ${n} from AP tier list`); }
+    return changes.length > 0 ? changes : ["No data changes detected"];
+  }
+
+  async function loadDiff() {
+    if (!data || data.changelog.length === 0) return;
+    setDiffLoading(true);
+    try {
+      const lastDate = data.changelog[0].date;
+      const parts = lastDate.split(".");
+      const since = parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}T00:00:00Z` : "";
+      const res = await fetch(`https://api.github.com/repos/aaonhub/chogath-feastament/commits?path=data/matchups.json&until=${since}&per_page=1`);
+      const commits = await res.json();
+      if (!Array.isArray(commits) || commits.length === 0) { setDiffChanges(["Could not find data from last changelog date"]); return; }
+      const sha = commits[0].sha;
+      const fileRes = await fetch(`https://api.github.com/repos/aaonhub/chogath-feastament/contents/data/matchups.json?ref=${sha}`);
+      const fileData = await fileRes.json();
+      if (!fileData.content) { setDiffChanges(["Could not load old data"]); return; }
+      const oldJson = JSON.parse(atob(fileData.content.replace(/\n/g, "")));
+      setDiffChanges(computeDiff(oldJson, data));
+    } catch { setDiffChanges(["Error loading changes"]); }
+    finally { setDiffLoading(false); }
+  }
 
   const todayStr = (() => {
     const now = new Date();
@@ -873,7 +903,7 @@ function ChangelogAdmin({ data, setData, setDirty }: {
           {daysSince !== null && <span className="text-xs text-foreground/40">{daysSince === 0 ? "today" : daysSince === 1 ? "yesterday" : `${daysSince} days ago`}</span>}
           {daysSince !== null && daysSince > 7 && <span className="text-xs text-amber-400/70">— consider adding a new entry</span>}
           <div className="flex-1" />
-          <button onClick={() => setAddingNew(true)}
+          <button onClick={() => { loadDiff(); setAddingNew(true); }}
             className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
             + New Entry
           </button>
@@ -883,7 +913,7 @@ function ChangelogAdmin({ data, setData, setDirty }: {
       {data?.changelog.length === 0 && (
         <div className="flex items-center gap-4">
           <p className="text-foreground/40">No changelog entries yet.</p>
-          <button onClick={() => setAddingNew(true)}
+          <button onClick={() => { loadDiff(); setAddingNew(true); }}
             className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
             + New Entry
           </button>
@@ -939,7 +969,8 @@ function ChangelogAdmin({ data, setData, setDirty }: {
         <ChangelogEntryModal
           entry={{ date: todayStr, items: [""] }}
           isNew
-          summaryData={data}
+          diffChanges={diffChanges}
+          diffLoading={diffLoading}
           onSave={(newEntry) => {
             setData({ ...data, changelog: [{ ...newEntry, items: newEntry.items.filter(Boolean) }, ...data.changelog] });
             setDirty(true); setAddingNew(false);
