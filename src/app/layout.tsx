@@ -44,7 +44,7 @@ function Nav() {
 
   return (
     <nav className="sticky top-0 z-50 border-b border-card-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-3 sm:gap-4">
+      <div className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-3 sm:gap-3">
         <Link
           href="/"
           className="mr-auto text-lg font-bold tracking-tight text-accent-glow"
@@ -55,10 +55,10 @@ function Nav() {
           <Link
             key={l.href}
             href={l.href}
-            className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-foreground/70 transition hover:bg-card hover:text-foreground"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-foreground/70 transition hover:bg-card hover:text-foreground sm:gap-1.5 sm:px-3 sm:text-sm"
           >
             {l.icon}
-            {l.label}
+            <span className={l.icon ? "hidden sm:inline" : ""}>{l.label}</span>
           </Link>
         ))}
       </div>
