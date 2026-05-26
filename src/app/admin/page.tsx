@@ -826,28 +826,57 @@ export default function AdminPage() {
           </div>
 
           {activeTab === "changelog" ? (
-            <div className="space-y-3">
-              <button onClick={() => {
-                if (!data) return;
-                const now = new Date();
-                const dd = String(now.getDate()).padStart(2, "0");
-                const mm = String(now.getMonth() + 1).padStart(2, "0");
-                const yyyy = now.getFullYear();
-                const todayStr = `${dd}.${mm}.${yyyy}`;
-                setData({ ...data, changelog: [{ date: todayStr, items: [""] }, ...data.changelog] });
-                setDirty(true);
-              }} className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
-                + Add Entry
-              </button>
+            <div className="space-y-6">
+              {/* Changes since last changelog */}
+              {data && data.changelog.length > 0 && (() => {
+                const lastDate = data.changelog[0]?.date || "";
+                const parts = lastDate.split(".");
+                const lastTs = parts.length === 3 ? new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime() : 0;
+                const now = Date.now();
+                const daysSince = lastTs ? Math.floor((now - lastTs) / (1000 * 60 * 60 * 24)) : null;
+                return (
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-amber-400">Since last changelog ({lastDate})</h3>
+                      {daysSince !== null && <span className="text-xs text-foreground/40">{daysSince === 0 ? "today" : daysSince === 1 ? "yesterday" : `${daysSince} days ago`}</span>}
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-sm text-foreground/60">
+                      <span>{data.mid.length} mid matchups</span>
+                      <span className="text-foreground/20">|</span>
+                      <span>{data.top.length} top matchups</span>
+                      <span className="text-foreground/20">|</span>
+                      <span>{(data.tankItems?.reduce((n, t) => n + t.items.length, 0) || 0) + (data.apItems?.reduce((n, t) => n + t.items.length, 0) || 0)} items in tier list</span>
+                    </div>
+                    {daysSince !== null && daysSince > 7 && (
+                      <p className="mt-2 text-xs text-amber-400/70">Consider adding a new changelog entry — it&apos;s been over a week.</p>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <div className="flex items-center gap-3">
+                <h3 className="text-lg font-bold">Entries</h3>
+                <button onClick={() => {
+                  if (!data) return;
+                  const now = new Date();
+                  const dd = String(now.getDate()).padStart(2, "0");
+                  const mm = String(now.getMonth() + 1).padStart(2, "0");
+                  const yyyy = now.getFullYear();
+                  const todayStr = `${dd}.${mm}.${yyyy}`;
+                  setData({ ...data, changelog: [{ date: todayStr, items: [""] }, ...data.changelog] });
+                  setDirty(true);
+                }} className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
+                  + New Entry
+                </button>
+              </div>
 
               {data?.changelog.length === 0 && (
                 <p className="py-12 text-center text-foreground/40">No changelog entries yet.</p>
               )}
 
               {data?.changelog.map((entry, entryIndex) => (
-                <div key={entryIndex} className="rounded-xl border border-card-border bg-card p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-foreground/50">Date</label>
+                <div key={entryIndex} className="rounded-xl border border-card-border bg-card overflow-hidden">
+                  <div className="flex items-center gap-3 bg-card-border/20 px-4 py-3">
                     <input type="text" value={entry.date}
                       onChange={(e) => {
                         if (!data) return;
@@ -855,8 +884,9 @@ export default function AdminPage() {
                         newChangelog[entryIndex] = { ...newChangelog[entryIndex], date: e.target.value };
                         setData({ ...data, changelog: newChangelog }); setDirty(true);
                       }}
-                      className="w-40 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm text-foreground focus:border-accent focus:outline-none"
+                      className="w-36 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm font-semibold text-accent-glow focus:border-accent focus:outline-none"
                       placeholder="DD.MM.YYYY" />
+                    <span className="text-xs text-foreground/30">{entry.items.length} item{entry.items.length !== 1 ? "s" : ""}</span>
                     <div className="flex-1" />
                     <button onClick={() => {
                       if (!data) return;
@@ -865,11 +895,11 @@ export default function AdminPage() {
                       newChangelog.splice(entryIndex, 1);
                       setData({ ...data, changelog: newChangelog }); setDirty(true);
                     }} className="shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">
-                      Delete Entry
+                      Delete
                     </button>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="p-4 space-y-2">
                     {entry.items.map((item, itemIndex) => (
                       <div key={itemIndex} className="flex items-start gap-2">
                         <span className="mt-2 text-xs text-foreground/30">{itemIndex + 1}.</span>

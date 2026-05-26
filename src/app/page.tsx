@@ -70,23 +70,23 @@ export default function Home() {
             <Image
               src="/images/saku-profile.jpg"
               alt="Sakuritou's Challenger profile"
-              width={300}
-              height={300}
+              width={420}
+              height={420}
               className="rounded-lg border border-card-border"
             />
             <div className="flex gap-3">
               <Image
                 src="/images/challenger.jpg"
                 alt="Promoted to Challenger"
-                width={142}
-                height={190}
+                width={200}
+                height={270}
                 className="flex-1 rounded-lg border border-card-border object-cover"
               />
               <Image
                 src="/images/saku-opgg.jpg"
                 alt="Sakuritou's OP.GG stats"
-                width={142}
-                height={190}
+                width={200}
+                height={270}
                 className="flex-1 rounded-lg border border-card-border object-cover"
               />
             </div>
@@ -109,8 +109,8 @@ export default function Home() {
             <Image
               src="/images/saku-rank1.jpg"
               alt="Rank 1 All Time"
-              width={400}
-              height={100}
+              width={500}
+              height={125}
               className="mb-4 rounded-lg border border-card-border"
             />
             <div className="flex flex-wrap gap-2">
