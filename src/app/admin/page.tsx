@@ -713,6 +713,200 @@ function ItemsTierAdmin({ data, setData, setDirty, itemNames, itemIdMap }: {
   );
 }
 
+// ── Changelog Admin ──
+
+function ChangelogEntryModal({ entry, onSave, onClose, isNew, changes }: {
+  entry: ChangelogEntry; onSave: (e: ChangelogEntry) => void; onClose: () => void; isNew?: boolean; changes?: string[];
+}) {
+  const [e, setE] = useState<ChangelogEntry>({ ...entry, items: [...entry.items] });
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; document.documentElement.style.overflow = ""; };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-4xl rounded-2xl border border-card-border bg-card shadow-2xl my-8" onClick={(ev) => ev.stopPropagation()}>
+        <div className="flex items-center gap-4 border-b border-card-border px-6 py-4">
+          <h2 className="flex-1 text-xl font-bold">{isNew ? "New Changelog Entry" : `Edit: ${e.date}`}</h2>
+          <button onClick={() => onSave(e)} className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-white transition hover:bg-accent-glow">
+            {isNew ? "Add" : "Done"}
+          </button>
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full text-foreground/40 hover:text-foreground hover:bg-card-border">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="flex flex-col lg:flex-row">
+          {/* Left: Changes reference (for new entries) */}
+          {isNew && changes && changes.length > 0 && (
+            <div className="border-b border-card-border p-6 lg:w-1/2 lg:border-b-0 lg:border-r">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-amber-400">Recent Changes</h3>
+              <p className="mb-3 text-xs text-foreground/40">Click any to add it to your entry.</p>
+              <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
+                {changes.map((c, i) => (
+                  <button key={i} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), c] }))}
+                    className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-left text-sm text-foreground/70 transition hover:border-accent/40 hover:text-foreground">
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Right (or full): Entry editor */}
+          <div className={`p-6 space-y-4 ${isNew && changes && changes.length > 0 ? "lg:w-1/2" : "w-full"}`}>
+            <div>
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Date</label>
+              <input type="text" value={e.date} onChange={(ev) => setE({ ...e, date: ev.target.value })}
+                className="w-40 rounded-lg border border-card-border bg-background px-3 py-2 text-sm font-semibold text-accent-glow focus:border-accent focus:outline-none"
+                placeholder="DD.MM.YYYY" />
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Items</label>
+              <div className="space-y-2">
+                {e.items.map((item, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="mt-2 text-xs text-foreground/30">{i + 1}.</span>
+                    <div className="flex-1">
+                      <AutoTextarea value={item} onChange={(v) => {
+                        const newItems = [...e.items]; newItems[i] = v; setE({ ...e, items: newItems });
+                      }} placeholder="Changelog item..." minRows={1} />
+                    </div>
+                    <button onClick={() => { const newItems = [...e.items]; newItems.splice(i, 1); setE({ ...e, items: newItems }); }}
+                      className="mt-1.5 shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">X</button>
+                  </div>
+                ))}
+                <button onClick={() => setE({ ...e, items: [...e.items, ""] })}
+                  className="rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/50 transition hover:border-accent/40 hover:text-foreground">
+                  + Add Item
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChangelogAdmin({ data, setData, setDirty }: {
+  data: MatchupData | null; setData: (d: MatchupData) => void; setDirty: (d: boolean) => void;
+}) {
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [addingNew, setAddingNew] = useState(false);
+  const [commits, setCommits] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("https://api.github.com/repos/aaonhub/chogath-feastament/commits?path=data/matchups.json&per_page=20")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) {
+          setCommits(d.map((c: { commit: { message: string } }) => c.commit.message).filter((m: string) => !m.startsWith("Merge")));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const todayStr = (() => {
+    const now = new Date();
+    return `${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}.${now.getFullYear()}`;
+  })();
+
+  const lastDate = data?.changelog[0]?.date || "";
+  const lastParts = lastDate.split(".");
+  const lastTs = lastParts.length === 3 ? new Date(parseInt(lastParts[2]), parseInt(lastParts[1]) - 1, parseInt(lastParts[0])).getTime() : 0;
+  const daysSince = lastTs ? Math.floor((Date.now() - lastTs) / (1000 * 60 * 60 * 24)) : null;
+
+  return (
+    <div className="space-y-4">
+      {/* Status bar */}
+      {data && data.changelog.length > 0 && (
+        <div className="flex items-center gap-4 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+          <span className="text-sm font-semibold text-amber-400">Last entry: {lastDate}</span>
+          {daysSince !== null && <span className="text-xs text-foreground/40">{daysSince === 0 ? "today" : daysSince === 1 ? "yesterday" : `${daysSince} days ago`}</span>}
+          {daysSince !== null && daysSince > 7 && <span className="text-xs text-amber-400/70">— consider adding a new entry</span>}
+          <div className="flex-1" />
+          <button onClick={() => setAddingNew(true)}
+            className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
+            + New Entry
+          </button>
+        </div>
+      )}
+
+      {data?.changelog.length === 0 && (
+        <div className="flex items-center gap-4">
+          <p className="text-foreground/40">No changelog entries yet.</p>
+          <button onClick={() => setAddingNew(true)}
+            className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
+            + New Entry
+          </button>
+        </div>
+      )}
+
+      {/* Read-only entry list */}
+      {data?.changelog.map((entry, idx) => (
+        <div key={idx} className="rounded-xl border border-card-border bg-card px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-accent-glow">{entry.date}</span>
+            <span className="text-xs text-foreground/30">{entry.items.length} item{entry.items.length !== 1 ? "s" : ""}</span>
+            <div className="flex-1" />
+            <button onClick={() => setEditingIdx(idx)}
+              className="rounded px-2 py-1 text-xs font-semibold text-accent-glow transition hover:bg-accent/20">
+              Edit
+            </button>
+            <button onClick={() => {
+              if (!data || !confirm(`Delete entry for ${entry.date}?`)) return;
+              const newChangelog = [...data.changelog]; newChangelog.splice(idx, 1);
+              setData({ ...data, changelog: newChangelog }); setDirty(true);
+            }} className="rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">
+              Delete
+            </button>
+          </div>
+          {entry.items.length > 0 && (
+            <ul className="mt-2 space-y-0.5 text-sm text-foreground/60">
+              {entry.items.map((item, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-foreground/25">{i + 1}.</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+
+      {/* Edit modal */}
+      {editingIdx !== null && data && (
+        <ChangelogEntryModal
+          entry={data.changelog[editingIdx]}
+          onSave={(updated) => {
+            const newChangelog = [...data.changelog]; newChangelog[editingIdx] = updated;
+            setData({ ...data, changelog: newChangelog }); setDirty(true); setEditingIdx(null);
+          }}
+          onClose={() => setEditingIdx(null)}
+        />
+      )}
+
+      {/* New entry modal */}
+      {addingNew && data && (
+        <ChangelogEntryModal
+          entry={{ date: todayStr, items: [""] }}
+          isNew
+          changes={commits}
+          onSave={(newEntry) => {
+            setData({ ...data, changelog: [{ ...newEntry, items: newEntry.items.filter(Boolean) }, ...data.changelog] });
+            setDirty(true); setAddingNew(false);
+          }}
+          onClose={() => setAddingNew(false)}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -826,121 +1020,8 @@ export default function AdminPage() {
           </div>
 
           {activeTab === "changelog" ? (
-            <div className="space-y-6">
-              {/* Changes since last changelog */}
-              {data && data.changelog.length > 0 && (() => {
-                const lastDate = data.changelog[0]?.date || "";
-                const parts = lastDate.split(".");
-                const lastTs = parts.length === 3 ? new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0])).getTime() : 0;
-                const now = Date.now();
-                const daysSince = lastTs ? Math.floor((now - lastTs) / (1000 * 60 * 60 * 24)) : null;
-                return (
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-amber-400">Since last changelog ({lastDate})</h3>
-                      {daysSince !== null && <span className="text-xs text-foreground/40">{daysSince === 0 ? "today" : daysSince === 1 ? "yesterday" : `${daysSince} days ago`}</span>}
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-sm text-foreground/60">
-                      <span>{data.mid.length} mid matchups</span>
-                      <span className="text-foreground/20">|</span>
-                      <span>{data.top.length} top matchups</span>
-                      <span className="text-foreground/20">|</span>
-                      <span>{(data.tankItems?.reduce((n, t) => n + t.items.length, 0) || 0) + (data.apItems?.reduce((n, t) => n + t.items.length, 0) || 0)} items in tier list</span>
-                    </div>
-                    {daysSince !== null && daysSince > 7 && (
-                      <p className="mt-2 text-xs text-amber-400/70">Consider adding a new changelog entry — it&apos;s been over a week.</p>
-                    )}
-                  </div>
-                );
-              })()}
+            <ChangelogAdmin data={data} setData={setData} setDirty={setDirty} />
 
-              <div className="flex items-center gap-3">
-                <h3 className="text-lg font-bold">Entries</h3>
-                <button onClick={() => {
-                  if (!data) return;
-                  const now = new Date();
-                  const dd = String(now.getDate()).padStart(2, "0");
-                  const mm = String(now.getMonth() + 1).padStart(2, "0");
-                  const yyyy = now.getFullYear();
-                  const todayStr = `${dd}.${mm}.${yyyy}`;
-                  setData({ ...data, changelog: [{ date: todayStr, items: [""] }, ...data.changelog] });
-                  setDirty(true);
-                }} className="rounded-lg bg-accent/20 border border-accent/40 px-3 py-2 text-sm font-semibold text-accent-glow transition hover:bg-accent/30">
-                  + New Entry
-                </button>
-              </div>
-
-              {data?.changelog.length === 0 && (
-                <p className="py-12 text-center text-foreground/40">No changelog entries yet.</p>
-              )}
-
-              {data?.changelog.map((entry, entryIndex) => (
-                <div key={entryIndex} className="rounded-xl border border-card-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-3 bg-card-border/20 px-4 py-3">
-                    <input type="text" value={entry.date}
-                      onChange={(e) => {
-                        if (!data) return;
-                        const newChangelog = [...data.changelog];
-                        newChangelog[entryIndex] = { ...newChangelog[entryIndex], date: e.target.value };
-                        setData({ ...data, changelog: newChangelog }); setDirty(true);
-                      }}
-                      className="w-36 rounded-lg border border-card-border bg-background px-3 py-1.5 text-sm font-semibold text-accent-glow focus:border-accent focus:outline-none"
-                      placeholder="DD.MM.YYYY" />
-                    <span className="text-xs text-foreground/30">{entry.items.length} item{entry.items.length !== 1 ? "s" : ""}</span>
-                    <div className="flex-1" />
-                    <button onClick={() => {
-                      if (!data) return;
-                      if (!confirm(`Delete entry for ${entry.date}?`)) return;
-                      const newChangelog = [...data.changelog];
-                      newChangelog.splice(entryIndex, 1);
-                      setData({ ...data, changelog: newChangelog }); setDirty(true);
-                    }} className="shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">
-                      Delete
-                    </button>
-                  </div>
-
-                  <div className="p-4 space-y-2">
-                    {entry.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex items-start gap-2">
-                        <span className="mt-2 text-xs text-foreground/30">{itemIndex + 1}.</span>
-                        <div className="flex-1">
-                          <AutoTextarea value={item}
-                            onChange={(v) => {
-                              if (!data) return;
-                              const newChangelog = [...data.changelog];
-                              const newItems = [...newChangelog[entryIndex].items];
-                              newItems[itemIndex] = v;
-                              newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
-                              setData({ ...data, changelog: newChangelog }); setDirty(true);
-                            }}
-                            placeholder="Changelog item..."
-                            minRows={1} />
-                        </div>
-                        <button onClick={() => {
-                          if (!data) return;
-                          const newChangelog = [...data.changelog];
-                          const newItems = [...newChangelog[entryIndex].items];
-                          newItems.splice(itemIndex, 1);
-                          newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
-                          setData({ ...data, changelog: newChangelog }); setDirty(true);
-                        }} className="mt-1.5 shrink-0 rounded px-2 py-1 text-xs text-hard transition hover:bg-hard/20">
-                          X
-                        </button>
-                      </div>
-                    ))}
-                    <button onClick={() => {
-                      if (!data) return;
-                      const newChangelog = [...data.changelog];
-                      const newItems = [...newChangelog[entryIndex].items, ""];
-                      newChangelog[entryIndex] = { ...newChangelog[entryIndex], items: newItems };
-                      setData({ ...data, changelog: newChangelog }); setDirty(true);
-                    }} className="rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/50 transition hover:border-accent/40 hover:text-foreground">
-                      + Add Item
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
           ) : activeTab === "items" ? (
             <ItemsTierAdmin data={data} setData={setData} setDirty={setDirty} itemNames={itemNames} itemIdMap={itemIdMap} />
           ) : (
