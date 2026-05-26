@@ -715,8 +715,8 @@ function ItemsTierAdmin({ data, setData, setDirty, itemNames, itemIdMap }: {
 
 // ── Changelog Admin ──
 
-function ChangelogEntryModal({ entry, onSave, onClose, isNew, changes }: {
-  entry: ChangelogEntry; onSave: (e: ChangelogEntry) => void; onClose: () => void; isNew?: boolean; changes?: string[];
+function ChangelogEntryModal({ entry, onSave, onClose, isNew, summaryData }: {
+  entry: ChangelogEntry; onSave: (e: ChangelogEntry) => void; onClose: () => void; isNew?: boolean; summaryData?: MatchupData;
 }) {
   const [e, setE] = useState<ChangelogEntry>({ ...entry, items: [...entry.items] });
 
@@ -741,23 +741,79 @@ function ChangelogEntryModal({ entry, onSave, onClose, isNew, changes }: {
 
         <div className="flex flex-col lg:flex-row">
           {/* Left: Changes reference (for new entries) */}
-          {isNew && changes && changes.length > 0 && (
-            <div className="border-b border-card-border p-6 lg:w-1/2 lg:border-b-0 lg:border-r">
-              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-amber-400">Recent Changes</h3>
-              <p className="mb-3 text-xs text-foreground/40">Click any to add it to your entry.</p>
-              <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
-                {changes.map((c, i) => (
-                  <button key={i} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), c] }))}
-                    className="w-full rounded-lg border border-card-border bg-background px-3 py-2 text-left text-sm text-foreground/70 transition hover:border-accent/40 hover:text-foreground">
-                    {c}
-                  </button>
-                ))}
+          {isNew && summaryData && (
+            <div className="border-b border-card-border p-6 lg:w-1/2 lg:border-b-0 lg:border-r max-h-[70vh] overflow-y-auto">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-amber-400">Current Guide State</h3>
+              <p className="mb-4 text-xs text-foreground/40">Click any line to add it to your entry.</p>
+
+              {/* Mid matchups */}
+              <div className="mb-4">
+                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Mid Matchups ({summaryData.mid.length})</h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {summaryData.mid.map((m) => (
+                    <button key={m.champion} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), `Updated ${m.champion} mid matchup`] }))}
+                      className="flex items-center gap-1 rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/60 transition hover:border-accent/40 hover:text-foreground">
+                      <ChampImg champKey={m.championKey} size={16} />
+                      {m.champion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Top matchups */}
+              <div className="mb-4">
+                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Top Matchups ({summaryData.top.length})</h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {summaryData.top.map((m) => (
+                    <button key={m.champion} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), `Updated ${m.champion} top matchup`] }))}
+                      className="flex items-center gap-1 rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/60 transition hover:border-accent/40 hover:text-foreground">
+                      <ChampImg champKey={m.championKey} size={16} />
+                      {m.champion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Item tiers */}
+              <div className="mb-4">
+                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Item Tier List</h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: "Updated Tank item tier list", key: "tank" },
+                    { label: "Updated AP item tier list", key: "ap" },
+                  ].map((t) => (
+                    <button key={t.key} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), t.label] }))}
+                      className="rounded border border-card-border bg-background px-2 py-1 text-xs text-foreground/60 transition hover:border-accent/40 hover:text-foreground">
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick templates */}
+              <div>
+                <h4 className="mb-2 text-xs font-bold uppercase tracking-wider text-foreground/50">Quick Templates</h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    "Adjusted matchup difficulties",
+                    "Updated item recommendations",
+                    "Added new matchup(s)",
+                    "Updated rune recommendations",
+                    "General advice improvements",
+                    "Patch changes applied",
+                  ].map((t) => (
+                    <button key={t} onClick={() => setE((prev) => ({ ...prev, items: [...prev.items.filter(Boolean), t] }))}
+                      className="rounded border border-dashed border-accent/30 bg-accent/5 px-2 py-1 text-xs text-accent-glow/70 transition hover:bg-accent/10 hover:text-accent-glow">
+                      {t}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {/* Right (or full): Entry editor */}
-          <div className={`p-6 space-y-4 ${isNew && changes && changes.length > 0 ? "lg:w-1/2" : "w-full"}`}>
+          <div className={`p-6 space-y-4 ${isNew && summaryData ? "lg:w-1/2" : "w-full"}`}>
             <div>
               <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-foreground/50">Date</label>
               <input type="text" value={e.date} onChange={(ev) => setE({ ...e, date: ev.target.value })}
@@ -797,18 +853,6 @@ function ChangelogAdmin({ data, setData, setDirty }: {
 }) {
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [addingNew, setAddingNew] = useState(false);
-  const [commits, setCommits] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetch("https://api.github.com/repos/aaonhub/chogath-feastament/commits?path=data/matchups.json&per_page=20")
-      .then((r) => r.json())
-      .then((d) => {
-        if (Array.isArray(d)) {
-          setCommits(d.map((c: { commit: { message: string } }) => c.commit.message).filter((m: string) => !m.startsWith("Merge")));
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const todayStr = (() => {
     const now = new Date();
@@ -895,7 +939,7 @@ function ChangelogAdmin({ data, setData, setDirty }: {
         <ChangelogEntryModal
           entry={{ date: todayStr, items: [""] }}
           isNew
-          changes={commits}
+          summaryData={data}
           onSave={(newEntry) => {
             setData({ ...data, changelog: [{ ...newEntry, items: newEntry.items.filter(Boolean) }, ...data.changelog] });
             setDirty(true); setAddingNew(false);
