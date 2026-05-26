@@ -52,7 +52,7 @@ const socials = [
 
 export default function Home() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
+    <div className="mx-auto max-w-7xl px-4 py-12">
       {/* Hero */}
       <div className="mb-12 text-center">
         <h1 className="mb-2 text-5xl font-extrabold tracking-tight sm:text-6xl">
@@ -66,28 +66,28 @@ export default function Home() {
       {/* Author */}
       <section className="mb-12 overflow-hidden rounded-xl border border-card-border bg-card">
         <div className="flex flex-col items-center gap-6 p-8 sm:flex-row sm:items-start">
-          <div className="flex shrink-0 flex-col gap-3">
+          <div className="flex shrink-0 flex-col gap-3 w-full sm:w-auto">
             <Image
               src="/images/saku-profile.jpg"
               alt="Sakuritou's Challenger profile"
-              width={420}
-              height={420}
-              className="rounded-lg border border-card-border"
+              width={500}
+              height={500}
+              className="w-full sm:w-[500px] rounded-lg border border-card-border"
             />
             <div className="flex gap-3">
               <Image
                 src="/images/challenger.jpg"
                 alt="Promoted to Challenger"
-                width={200}
-                height={270}
-                className="flex-1 rounded-lg border border-card-border object-cover"
+                width={245}
+                height={330}
+                className="flex-1 rounded-lg border border-card-border"
               />
               <Image
                 src="/images/saku-opgg.jpg"
                 alt="Sakuritou's OP.GG stats"
-                width={200}
-                height={270}
-                className="flex-1 rounded-lg border border-card-border object-cover"
+                width={245}
+                height={330}
+                className="flex-1 rounded-lg border border-card-border"
               />
             </div>
           </div>
@@ -109,8 +109,9 @@ export default function Home() {
             <Image
               src="/images/saku-rank1.jpg"
               alt="Rank 1 All Time"
-              width={500}
-              height={125}
+              width={600}
+              height={150}
+              style={{ width: "100%", height: "auto" }}
               className="mb-4 rounded-lg border border-card-border"
             />
             <div className="flex flex-wrap gap-2">
