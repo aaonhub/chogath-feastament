@@ -55,7 +55,7 @@ function Nav() {
           <Link
             key={l.href}
             href={l.href}
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium text-foreground/70 transition hover:bg-card hover:text-foreground sm:gap-1.5 sm:px-3 sm:text-sm"
+            className="inline-flex items-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium text-foreground/70 transition hover:bg-card hover:text-foreground active:scale-90 active:bg-accent/20 sm:gap-1.5 sm:px-3 sm:text-sm"
           >
             {l.icon}
             <span className="sm:hidden">{l.label}</span>
