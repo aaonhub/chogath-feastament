@@ -270,7 +270,6 @@ export default function ItemsPage() {
           </p>
         </div>
         <Image src="/images/bring-it-back.jpg" alt="We miss you" width={150} height={150} className="rounded-xl border-2 border-card-border shadow-lg shadow-cyan-500/20" />
-        <p className="mt-2 text-xs italic text-foreground/30">The order of items in the tiers doesn&apos;t mean anything.</p>
       </div>
 
       {selected && <ItemModal entry={selected} onClose={() => setSelected(null)} db={db} />}
