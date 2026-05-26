@@ -300,9 +300,9 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
           <DiffBadge diff={diff} />
         </div>
 
-        <div className="flex items-start gap-4">
+        <div className="flex flex-wrap items-start gap-4">
           {rune && (
-            <div className="shrink-0">
+            <div>
               <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-accent-glow/70">Rune</span>
               <div className="flex items-center gap-1.5">
                 <RuneIcons raw={rune} />
@@ -311,7 +311,7 @@ function Lightbox({ m, onClose }: { m: Matchup; onClose: () => void }) {
             </div>
           )}
           {order && (
-            <div className="shrink-0">
+            <div>
               <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-accent-glow/70">Skills</span>
               <SkillOrderIcons order={order} />
             </div>
