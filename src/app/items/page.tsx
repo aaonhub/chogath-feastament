@@ -262,10 +262,10 @@ export default function ItemsPage() {
       </div>
 
       {/* The sacred plea */}
-      <div className="mt-10 flex flex-col items-center gap-2">
-        <div className="relative">
-          <Image src="/images/pepe.jpg" alt="" width={80} height={60} className="absolute -left-16 -top-2 h-14 w-auto -rotate-12" />
-          <p className="text-2xl font-black tracking-wide text-foreground/80" style={{ fontFamily: "Impact, sans-serif" }}>
+      <div className="mt-10 flex flex-col items-center gap-3">
+        <div className="flex items-center gap-3">
+          <Image src="/images/pepe.jpg" alt="" width={50} height={38} className="h-10 w-auto -rotate-6" />
+          <p className="text-xl font-semibold italic tracking-wide text-foreground/70">
             BRING IT BACK RIOT!
           </p>
         </div>
