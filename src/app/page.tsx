@@ -9,7 +9,7 @@ function ImageLightbox({ src, onClose }: { src: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="relative" onClick={(e) => e.stopPropagation()}>
-        <Image src={src} alt="" width={1200} height={1200} className="max-h-[90vh] w-auto rounded-xl border border-card-border object-contain" />
+        <Image src={src} alt="" width={1200} height={1200} className="max-h-[90vh] max-w-[90vw] rounded-xl border border-card-border object-contain" style={{ minWidth: "50vw" }} />
         <button onClick={onClose} className="absolute -right-3 -top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card border border-card-border text-foreground/60 hover:text-foreground">
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
