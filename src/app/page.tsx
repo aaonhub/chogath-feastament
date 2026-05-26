@@ -66,28 +66,31 @@ export default function Home() {
       {/* Author */}
       <section className="mb-12 overflow-hidden rounded-xl border border-card-border bg-card">
         <div className="flex flex-col items-center gap-6 p-8 sm:flex-row sm:items-start">
-          <div className="flex shrink-0 flex-col gap-3 w-full sm:w-auto">
+          <div className="shrink-0">
             <Image
               src="/images/saku-profile.jpg"
               alt="Sakuritou's Challenger profile"
-              width={500}
-              height={500}
-              className="w-full sm:w-[500px] rounded-lg border border-card-border"
+              width={452}
+              height={438}
+              className="rounded-lg border border-card-border"
+              style={{ width: "452px", height: "auto" }}
             />
-            <div className="flex gap-3">
+            <div className="mt-3 flex gap-3">
               <Image
                 src="/images/challenger.jpg"
                 alt="Promoted to Challenger"
-                width={245}
-                height={330}
-                className="flex-1 rounded-lg border border-card-border"
+                width={320}
+                height={431}
+                className="rounded-lg border border-card-border"
+                style={{ height: "280px", width: "auto" }}
               />
               <Image
                 src="/images/saku-opgg.jpg"
                 alt="Sakuritou's OP.GG stats"
-                width={245}
-                height={330}
-                className="flex-1 rounded-lg border border-card-border"
+                width={454}
+                height={431}
+                className="rounded-lg border border-card-border"
+                style={{ height: "280px", width: "auto" }}
               />
             </div>
           </div>
@@ -109,9 +112,9 @@ export default function Home() {
             <Image
               src="/images/saku-rank1.jpg"
               alt="Rank 1 All Time"
-              width={600}
-              height={150}
-              style={{ width: "100%", height: "auto" }}
+              width={434}
+              height={147}
+              style={{ width: "auto", height: "auto" }}
               className="mb-4 rounded-lg border border-card-border"
             />
             <div className="flex flex-wrap gap-2">
