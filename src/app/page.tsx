@@ -77,142 +77,76 @@ const socials = [
 
 export default function Home() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12">
-      {/* Hero */}
-      <div className="mb-12 flex justify-start">
-        <div className="text-left">
-          <h1 className="mb-2 text-5xl font-extrabold tracking-tight sm:text-6xl">
+    <div className="mx-auto max-w-7xl px-4 py-10">
+      {/* Hero: Title + Bio side by side */}
+      <section className="mb-10 flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="flex-1">
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight sm:text-5xl">
             <span className="text-accent-glow">Cho&apos;Gath</span> Feastament
           </h1>
-          <p className="text-lg text-foreground/50">
+          <p className="mb-6 text-base text-foreground/50">
             The definitive matchup guide &mdash; Makkro approved
           </p>
-        </div>
-      </div>
-
-      {/* Author */}
-      <section className="mb-12 overflow-hidden rounded-xl border border-card-border bg-card">
-        <div className="flex flex-col items-center gap-6 p-8 sm:flex-row sm:items-start">
-          <div className="shrink-0">
-            <ClickableImage
-              src="/images/saku-profile.jpg"
-              alt="Sakuritou's Challenger profile"
-              width={452}
-              height={438}
-              className="w-full rounded-lg border border-card-border lg:w-[520px]"
-            />
-            <div className="mt-3 flex gap-3">
-              <ClickableImage
-                src="/images/challenger.jpg"
-                alt="Promoted to Challenger"
-                width={320}
-                height={431}
-                className="flex-1 min-w-0 rounded-lg border border-card-border"
-              />
-              <ClickableImage
-                src="/images/saku-opgg.jpg"
-                alt="Sakuritou's OP.GG stats"
-                width={454}
-                height={431}
-                className="flex-1 min-w-0 rounded-lg border border-card-border"
-              />
-            </div>
-          </div>
-          <div>
-            <h2 className="mb-3 text-3xl font-bold">Sakuritou</h2>
-            <p className="mb-3 text-base leading-relaxed text-foreground/70">
-              Multi-season Challenger Cho&apos;Gath player and one-trick. Rank 1
-              Cho&apos;Gath worldwide, peaked 1465 LP Rank 25 on EUW in Season
-              14. Holds the record for highest LP ever achieved by a Cho&apos;Gath
-              main.
+          <div className="mb-4 rounded-xl border border-card-border bg-card p-5">
+            <h2 className="mb-2 text-xl font-bold">by Sakuritou</h2>
+            <p className="mb-2 text-sm leading-relaxed text-foreground/60">
+              Multi-season Challenger one-trick. Rank 1 Cho&apos;Gath worldwide,
+              peaked 1465 LP Rank 25 EUW. Highest LP ever by a Cho&apos;Gath main.
             </p>
-            <p className="mb-4 text-base leading-relaxed text-foreground/70">
-              Made with help from{" "}
-              <span className="text-foreground/90 font-semibold">Cramble</span>,{" "}
-              <span className="text-foreground/90 font-semibold">Captain Orb</span>, and{" "}
-              <span className="text-foreground/90 font-semibold">Swaggy</span>. All matchups
-              are based on GM+ experience.
+            <p className="mb-3 text-sm text-foreground/50">
+              With{" "}
+              <span className="text-foreground/80 font-semibold">Cramble</span>,{" "}
+              <span className="text-foreground/80 font-semibold">Captain Orb</span> &{" "}
+              <span className="text-foreground/80 font-semibold">Swaggy</span>.
+              All matchups GM+ verified.
             </p>
-            <ClickableImage
-              src="/images/saku-rank1.jpg"
-              alt="Rank 1 All Time"
-              width={434}
-              height={147}
-              style={{ width: "auto", height: "auto" }}
-              className="mb-4 rounded-lg border border-card-border"
-            />
             <div className="flex flex-wrap gap-2">
               {socials.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-card-border bg-background px-3 py-2 text-sm font-medium text-foreground/70 transition hover:border-accent hover:text-accent-glow"
-                >
-                  {s.icon}
-                  {s.label}
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-card-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground/60 transition hover:border-accent hover:text-accent-glow">
+                  {s.icon}{s.label}
                 </a>
               ))}
             </div>
           </div>
+          {/* Difficulty legend inline */}
+          <div className="flex flex-wrap items-center gap-2 text-xs text-foreground/40">
+            <span>Difficulty:</span>
+            <span className="rounded bg-easy px-2 py-0.5 font-semibold text-white">Easy</span>
+            <span className="rounded bg-medium px-2 py-0.5 font-semibold text-white">Medium</span>
+            <span className="rounded bg-hard px-2 py-0.5 font-semibold text-white">Hard</span>
+            <span className="rounded bg-super-hard px-2 py-0.5 font-semibold text-white">Super Hard</span>
+            <span className="ml-2 text-foreground/30">Patch 25.18</span>
+          </div>
+        </div>
+
+        {/* Lane cards stacked on the right */}
+        <div className="flex flex-col gap-3 lg:w-[340px] lg:shrink-0">
+          <LaneCard href="/mid" title="Mid Lane" count={matchupData.mid.length} icon="/images/mid-lane.webp"
+            description="52 matchups with runes, items, and skill order." />
+          <LaneCard href="/top" title="Top Lane" count={matchupData.top.length} icon="/images/top-lane.png"
+            description="58 matchups with runes, items, and skill order." />
+          <div className="flex gap-3">
+            <Link href="/items" className="flex-1 rounded-lg border border-card-border bg-card px-4 py-3 text-sm font-semibold text-foreground/70 transition hover:border-accent/50 hover:text-foreground">
+              Item Tiers
+            </Link>
+            <Link href="/skins" className="flex-1 rounded-lg border border-card-border bg-card px-4 py-3 text-sm font-semibold text-foreground/70 transition hover:border-accent/50 hover:text-foreground">
+              Skin Tiers
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Lane cards */}
-      <section className="mb-12">
-        <h2 className="mb-4 text-xl font-bold">Matchup Guides</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <LaneCard
-            href="/mid"
-            title="Mid Lane"
-            count={matchupData.mid.length}
-            icon="/images/mid-lane.webp"
-            description="All mid lane matchups with runes, items, and ability order for both AP and Tank."
-          />
-          <LaneCard
-            href="/top"
-            title="Top Lane"
-            count={matchupData.top.length}
-            icon="/images/top-lane.png"
-            description="All top lane matchups with runes, items, and ability order for both AP and Tank."
-          />
-        </div>
-      </section>
-
-      {/* How to read */}
-      <section className="mb-12 rounded-xl border border-card-border bg-card p-6">
-        <h2 className="mb-4 text-xl font-bold">How to Read This Guide</h2>
-        <ul className="space-y-2 text-sm text-foreground/70">
-          <li>
-            Each matchup includes advice, ideal runes, item recommendations, and
-            skill order for both <strong className="text-foreground/90">AP</strong> and{" "}
-            <strong className="text-foreground/90">Tank</strong> Cho&apos;Gath.
-          </li>
-          <li className="flex items-center gap-2">
-            Difficulty is color-coded:
-            <span className="rounded bg-easy px-2 py-0.5 text-xs font-semibold text-white">
-              Easy
-            </span>
-            <span className="rounded bg-medium px-2 py-0.5 text-xs font-semibold text-white">
-              Medium
-            </span>
-            <span className="rounded bg-hard px-2 py-0.5 text-xs font-semibold text-white">
-              Hard
-            </span>
-            <span className="rounded bg-super-hard px-2 py-0.5 text-xs font-semibold text-white">
-              Super Hard
-            </span>
-          </li>
-          <li>
-            Use the search bar and difficulty filters on each page to find what
-            you need.
-          </li>
-        </ul>
-        <p className="mt-4 text-xs text-foreground/40">
-          Current Patch: 25.18 &middot; Disclaimer: All matchups are based on GM+
-          experience.
-        </p>
+      {/* Images row */}
+      <section className="mb-6 flex gap-3 items-end">
+        <ClickableImage src="/images/saku-profile.jpg" alt="Challenger profile"
+          width={452} height={438} className="h-[240px] w-auto rounded-lg border border-card-border" />
+        <ClickableImage src="/images/challenger.jpg" alt="Promoted to Challenger"
+          width={320} height={431} className="h-[240px] w-auto rounded-lg border border-card-border" />
+        <ClickableImage src="/images/saku-opgg.jpg" alt="OP.GG stats"
+          width={454} height={431} className="h-[240px] w-auto rounded-lg border border-card-border" />
+        <ClickableImage src="/images/saku-rank1.jpg" alt="Rank 1 All Time"
+          width={434} height={147} className="h-[240px] w-auto rounded-lg border border-card-border" />
       </section>
     </div>
   );
