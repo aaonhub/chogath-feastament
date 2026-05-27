@@ -449,7 +449,7 @@ export default function MatchupPage({
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <h1 className="mb-1 flex items-center gap-3 text-3xl font-bold">
         {laneIcon && <Image src={laneIcon} alt={`${lane} lane`} width={32} height={32} className="h-8 w-8" />}
         {lane} Matchups

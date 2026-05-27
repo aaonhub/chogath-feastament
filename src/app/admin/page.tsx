@@ -1042,7 +1042,7 @@ export default function AdminPage() {
   const filtered = search ? matchups.filter((m) => m.champion.toLowerCase().includes(search.toLowerCase())) : matchups;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-6 flex items-center gap-4">
         <h1 className="text-2xl font-bold">Matchup Admin</h1>
         <div className="ml-auto flex items-center gap-2">
